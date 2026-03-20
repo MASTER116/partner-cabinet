@@ -59,6 +59,10 @@ function initAuth() {
         let v = ph.value.replace(/\D/g,'');
         if (v.startsWith('8')) v = '7' + v.slice(1);
         if (!v.startsWith('7')) v = '7' + v;
+        // Только российские мобильные: +7 9XX
+        if (v.length > 1 && v[1] !== '9') v = '79';
+        // Ограничиваем длину: 7 + 10 цифр = 11
+        v = v.slice(0, 11);
         let f = '+7';
         if (v.length>1) f+=' ('+v.slice(1,4);
         if (v.length>4) f+=') '+v.slice(4,7);
