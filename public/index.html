@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Партнёрская программа</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body data-theme="light">
+
+<div class="demo-bar">ДЕМО — Личный кабинет партнёра | Код входа: <b>123456</b></div>
+
+<!-- ========== AUTH ========== -->
+<div id="screen-auth" class="screen active">
+<div class="auth-wrap">
+<div class="auth-card">
+    <div class="auth-brand">
+        <div class="auth-icon">&#9733;</div>
+        <h1>Партнёрская программа</h1>
+        <p>Приглашайте клиентов и зарабатывайте</p>
+    </div>
+    <div id="step-phone" class="step active">
+        <div class="fg"><label>Номер телефона</label><input type="tel" id="i-phone" class="inp" placeholder="+7 (___) ___-__-__"></div>
+        <button class="btn btn-y w100" id="b-otp">Получить код</button>
+        <p class="hint">Код будет отправлен в Telegram</p>
+    </div>
+    <div id="step-code" class="step">
+        <p class="step-info">Код отправлен на <b id="s-phone"></b></p>
+        <div class="code-row">
+            <input type="text" maxlength="1" class="cd" data-i="0" inputmode="numeric">
+            <input type="text" maxlength="1" class="cd" data-i="1" inputmode="numeric">
+            <input type="text" maxlength="1" class="cd" data-i="2" inputmode="numeric">
+            <input type="text" maxlength="1" class="cd" data-i="3" inputmode="numeric">
+            <input type="text" maxlength="1" class="cd" data-i="4" inputmode="numeric">
+            <input type="text" maxlength="1" class="cd" data-i="5" inputmode="numeric">
+        </div>
+        <button class="btn btn-y w100" id="b-verify">Подтвердить</button>
+        <button class="btn-ghost w100" id="b-back">&#8592; Изменить номер</button>
+    </div>
+    <div id="step-reg" class="step">
+        <h2 style="margin-bottom:20px">Заполните анкету</h2>
+        <div class="fg"><label>ФИО</label><input type="text" id="i-name" class="inp" placeholder="Иванов Иван Иванович"></div>
+        <label class="ck"><input type="checkbox" id="i-agree"><span>Согласен с <a href="#">условиями программы</a></span></label>
+        <button class="btn btn-y w100" id="b-reg" style="margin-top:16px">Зарегистрироваться</button>
+    </div>
+    <div id="auth-msg" class="msg msg-err" style="display:none"></div>
+</div>
+</div>
+</div>
+
+<!-- ========== CABINET ========== -->
+<div id="screen-cab" class="screen">
+<div class="cab">
+<header class="hdr">
+    <div class="hdr-logo">&#9733; Партнёрская программа</div>
+    <div class="hdr-r">
+        <button class="btn-icon" id="b-theme" title="Тема"><span class="ic-sun">&#9788;</span><span class="ic-moon">&#9790;</span></button>
+        <span class="hdr-user" id="h-name"></span>
+        <button class="btn btn-o btn-s" id="b-logout">Выйти</button>
+    </div>
+</header>
+<nav class="nav" id="nav">
+    <button class="nav-b active" data-t="dash">Главная</button>
+    <button class="nav-b" data-t="refs">Мои клиенты</button>
+    <button class="nav-b" data-t="pays">Выплаты</button>
+    <button class="nav-b" data-t="prof">Профиль</button>
+</nav>
+
+<!-- Dashboard -->
+<section id="t-dash" class="tab active">
+<div class="grid4">
+    <div class="card" id="c-level"></div>
+    <div class="card"><div class="card-h">Начислено всего</div><div class="card-v" id="d-accrued">—</div><div class="card-s">За всё время</div></div>
+    <div class="card card-y"><div class="card-h">Доступно к выплате</div><div class="card-v" id="d-avail">—</div><div class="card-s">Можно запросить</div></div>
+    <div class="card"><div class="card-h">Клиентов</div><div class="card-v" id="d-cli">—</div><div class="card-s" id="d-cli-s">—</div></div>
+</div>
+<div class="card">
+    <div class="card-h">Реферальная ссылка</div>
+    <div class="ref-row"><input class="inp ref-inp" id="d-url" readonly><button class="btn btn-y btn-s copy-btn" data-c="d-url">Скопировать</button></div>
+    <div class="ref-row" style="margin-top:12px"><span class="lbl">Промокод:</span><code class="promo" id="d-promo"></code><button class="btn btn-o btn-s copy-btn" data-c="d-promo">Скопировать</button></div>
+</div>
+<div id="tg-block"></div>
+</section>
+
+<!-- Referrals -->
+<section id="t-refs" class="tab">
+<div class="card"><div class="card-h">Условия программы</div><div id="program-desc" style="color:var(--t2);font-size:14px;line-height:1.7"></div></div>
+<div class="card"><div class="card-h">Мои клиенты</div><div class="tw"><table><thead><tr><th>Дата</th><th>Клиент</th><th>Статус</th><th>Сумма</th><th>Бонус</th><th>Источник</th></tr></thead><tbody id="ref-tb"></tbody></table></div></div>
+<div class="card"><div class="card-h">История операций</div><div class="tw"><table><thead><tr><th>Дата</th><th>Тип</th><th>Сумма</th><th>Комментарий</th></tr></thead><tbody id="tx-tb"></tbody></table></div></div>
+</section>
+
+<!-- Payouts -->
+<section id="t-pays" class="tab">
+<div class="card">
+    <div class="card-h">Запросить выплату</div>
+    <p class="hint" style="text-align:left;margin-bottom:14px" id="min-pay-hint"></p>
+    <div class="frow"><div class="fg"><label>Сумма (₽)</label><input type="number" id="pay-amt" class="inp" placeholder="0"></div><div class="fg"><label>Способ</label><select id="pay-meth" class="inp"><option value="">Выберите</option><option value="card">Карта</option><option value="account">Счёт</option><option value="other">Другое</option></select></div></div>
+    <div class="fg"><label>Реквизиты</label><textarea id="pay-det" class="inp ta" placeholder="Номер карты или реквизиты"></textarea></div>
+    <button class="btn btn-y" id="b-pay" style="width:auto">Отправить заявку</button>
+    <div id="pay-msg" class="msg" style="display:none"></div>
+</div>
+<div class="card"><div class="card-h">Мои заявки</div><div class="tw"><table><thead><tr><th>Дата</th><th>Сумма</th><th>Способ</th><th>Статус</th><th>Обработано</th></tr></thead><tbody id="pay-tb"></tbody></table></div></div>
+</section>
+
+<!-- Profile -->
+<section id="t-prof" class="tab">
+<div class="card">
+    <div class="card-h">Профиль</div>
+    <div class="fg"><label>ФИО</label><input type="text" id="p-name" class="inp"></div>
+    <div class="fg"><label>Телефон</label><input type="text" id="p-phone" class="inp" disabled></div>
+    <div class="fg"><label>Город</label><input type="text" id="p-city" class="inp"></div>
+    <div class="fg"><label>Реквизиты</label><textarea id="p-pay" class="inp ta"></textarea></div>
+    <button class="btn btn-y" id="b-prof" style="width:auto">Сохранить</button>
+    <div id="prof-msg" class="msg" style="display:none"></div>
+</div>
+</section>
+</div>
+</div>
+
+<!-- ========== ADMIN ========== -->
+<div id="screen-admin" class="screen">
+<div class="cab">
+<header class="hdr">
+    <div class="hdr-logo">&#9881; Админ-панель</div>
+    <div class="hdr-r">
+        <a href="/" class="btn btn-o btn-s">&#8592; В кабинет</a>
+    </div>
+</header>
+<nav class="nav" id="admin-nav">
+    <button class="nav-b active" data-t="a-partners">Партнёры</button>
+    <button class="nav-b" data-t="a-refs">Клиенты</button>
+    <button class="nav-b" data-t="a-pays">Выплаты</button>
+    <button class="nav-b" data-t="a-settings">Настройки</button>
+</nav>
+
+<section id="t-a-partners" class="tab active">
+<div class="card">
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input type="text" id="a-search" class="inp" placeholder="Поиск по имени / телефону" style="flex:1">
+        <button class="btn btn-y btn-s" id="a-search-btn">Найти</button>
+        <button class="btn btn-o btn-s" id="a-export-p">CSV</button>
+    </div>
+    <div class="tw"><table><thead><tr><th>ID</th><th>ФИО</th><th>Телефон</th><th>Уровень</th><th>Начислено</th><th>Доступно</th><th>Клиентов</th><th></th></tr></thead><tbody id="a-p-tb"></tbody></table></div>
+</div>
+</section>
+
+<section id="t-a-refs" class="tab">
+<div class="card"><div class="tw"><table><thead><tr><th>ID</th><th>Клиент</th><th>Телефон</th><th>Партнёр</th><th>Статус</th><th>Сумма</th><th>Бонус</th><th></th></tr></thead><tbody id="a-r-tb"></tbody></table></div></div>
+</section>
+
+<section id="t-a-pays" class="tab">
+<div class="card">
+    <div style="margin-bottom:12px"><button class="btn btn-o btn-s" id="a-export-py">CSV</button></div>
+    <div class="tw"><table><thead><tr><th>ID</th><th>Партнёр</th><th>Сумма</th><th>Способ</th><th>Статус</th><th>Дата</th><th></th></tr></thead><tbody id="a-py-tb"></tbody></table></div>
+</div>
+</section>
+
+<section id="t-a-settings" class="tab">
+<div class="card">
+    <h3 style="margin-bottom:16px">Основные настройки</h3>
+    <div class="frow"><div class="fg"><label>Срок cookie (дней)</label><input type="number" id="as-cookie" class="inp"></div><div class="fg"><label>Мин. выплата (₽)</label><input type="number" id="as-minpay" class="inp"></div></div>
+    <div class="fg"><label>Описание программы</label><textarea id="as-desc" class="inp ta" rows="4"></textarea></div>
+    <div class="frow"><div class="fg"><label>TG Bot Token</label><input type="text" id="as-tg" class="inp"></div><div class="fg"><label>TG Bot Username</label><input type="text" id="as-tgu" class="inp"></div></div>
+    <div class="fg"><label>MAX Bot Token</label><input type="text" id="as-max" class="inp"></div>
+    <button class="btn btn-y" id="a-save-s" style="width:auto">Сохранить настройки</button>
+</div>
+<div class="card">
+    <h3 style="margin-bottom:16px">Уровни партнёров</h3>
+    <div class="tw"><table><thead><tr><th>Название</th><th>Мин. клиентов</th><th>Мин. сумма</th><th>Тип</th><th>Размер</th><th></th></tr></thead><tbody id="a-lv-tb"></tbody></table></div>
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-o btn-s" id="a-add-lv">+ Добавить</button><button class="btn btn-y btn-s" id="a-save-lv">Сохранить уровни</button></div>
+</div>
+</section>
+</div>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal" style="display:none"><div class="modal-c"><span class="modal-x" id="modal-close">&times;</span><div id="modal-body"></div></div></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

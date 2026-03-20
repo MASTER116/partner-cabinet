@@ -1,0 +1,6 @@
+node_modules/
+partner.db
+*.db-journal
+.env
+partner.db-shm
+partner.db-wal

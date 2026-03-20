@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Партнёрская программа — Демо</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+/* ===== Reset ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== Theme Variables ===== */
+:root, [data-theme="light"] {
+    --bg: #F5F5F5;
+    --bg-card: #FFFFFF;
+    --bg-input: #FFFFFF;
+    --bg-hover: #FAFAFA;
+    --text: #1A1A1A;
+    --text-2: #6B7280;
+    --text-3: #9CA3AF;
+    --accent: #FFDD2D;
+    --accent-h: #FFD100;
+    --accent-t: #1A1A1A;
+    --border: #E5E7EB;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-h: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-xl: 0 8px 30px rgba(0,0,0,0.12);
+    --ok: #10B981; --ok-bg: #ECFDF5;
+    --err: #EF4444; --err-bg: #FEF2F2;
+    --warn: #F59E0B; --warn-bg: #FFFBEB;
+    --info: #3B82F6; --info-bg: #EFF6FF;
+    --r: 16px; --r-s: 12px; --r-xs: 8px;
+}
+
+[data-theme="dark"] {
+    --bg: #0D0D0D;
+    --bg-card: #181818;
+    --bg-input: #222222;
+    --bg-hover: #1F1F1F;
+    --text: #F5F5F5;
+    --text-2: #9CA3AF;
+    --text-3: #6B7280;
+    --accent: #FFDD2D;
+    --accent-h: #FFD100;
+    --accent-t: #1A1A1A;
+    --border: #2A2A2A;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow-h: 0 4px 16px rgba(0,0,0,0.5);
+    --shadow-xl: 0 8px 30px rgba(0,0,0,0.6);
+    --ok: #34D399; --ok-bg: #064E3B;
+    --err: #F87171; --err-bg: #7F1D1D;
+    --warn: #FBBF24; --warn-bg: #78350F;
+    --info: #60A5FA; --info-bg: #1E3A5F;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* ===== Screens ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ===== AUTH ===== */
+.auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: var(--bg);
+}
+
+.auth-card {
+    background: var(--bg-card);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-xl);
+    padding: 48px 36px;
+    width: 100%;
+    max-width: 440px;
+    transition: box-shadow 0.3s;
+}
+
+.auth-card:hover { box-shadow: var(--shadow-xl); }
+
+.auth-brand {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.auth-brand-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--accent);
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 16px;
+}
+
+.auth-brand h1 {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.auth-brand p {
+    color: var(--text-2);
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.step { display: none; animation: fadeIn 0.3s; }
+.step.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.03em; }
+
+.input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 16px;
+    font-family: inherit;
+    border: 2px solid var(--border);
+    border-radius: var(--r-xs);
+    background: var(--bg-input);
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(255, 221, 45, 0.15);
+}
+
+/* Code inputs */
+.code-wrap { display: flex; gap: 10px; justify-content: center; margin: 8px 0; }
+.code-digit {
+    width: 52px; height: 60px;
+    text-align: center; font-size: 26px; font-weight: 700;
+    border: 2px solid var(--border); border-radius: var(--r-xs);
+    background: var(--bg-input); color: var(--text);
+    outline: none; transition: all 0.2s;
+}
+.code-digit:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255, 221, 45, 0.15); }
+.code-digit.filled { border-color: var(--ok); }
+
+/* Buttons */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 14px 28px; font-size: 16px; font-weight: 600; font-family: inherit;
+    border: none; border-radius: var(--r-xs); cursor: pointer;
+    transition: all 0.2s; text-decoration: none; gap: 8px;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn-primary { background: var(--accent); color: var(--accent-t); width: 100%; }
+.btn-primary:hover { background: var(--accent-h); box-shadow: var(--shadow-h); }
+
+.btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-sm { padding: 8px 16px; font-size: 13px; }
+.btn-ghost { background: none; border: none; color: var(--text-2); font-size: 14px; padding: 10px; width: 100%; cursor: pointer; }
+.btn-ghost:hover { color: var(--accent); }
+
+.btn-icon {
+    background: var(--bg-card); border: 2px solid var(--border);
+    border-radius: 50%; width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px; transition: all 0.2s; color: var(--text);
+}
+.btn-icon:hover { border-color: var(--accent); background: var(--accent); color: var(--accent-t); }
+
+.hint { font-size: 13px; color: var(--text-3); margin-top: 10px; text-align: center; }
+
+.step-info { text-align: center; color: var(--text-2); font-size: 14px; margin-bottom: 24px; }
+.step-info strong { color: var(--text); }
+
+.checkbox-row {
+    display: flex; align-items: flex-start; gap: 10px; font-size: 14px; cursor: pointer;
+}
+.checkbox-row input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); }
+.checkbox-row a { color: var(--accent); text-decoration: underline; }
+
+.alert { padding: 12px 16px; border-radius: var(--r-xs); font-size: 14px; margin-top: 16px; display: none; }
+.alert-error { background: var(--err-bg); color: var(--err); }
+.alert-success { background: var(--ok-bg); color: var(--ok); }
+
+/* ===== CABINET ===== */
+.cabinet {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+}
+
+/* Header */
+.header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 28px;
+}
+.header-logo { font-size: 20px; font-weight: 800; }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.header-user { font-size: 14px; color: var(--text-2); }
+
+[data-theme="light"] .icon-moon { display: none; }
+[data-theme="dark"] .icon-sun { display: none; }
+
+/* Nav */
+.nav {
+    display: flex; gap: 6px; margin-bottom: 28px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+}
+.nav-btn {
+    padding: 10px 22px; font-size: 14px; font-weight: 500; font-family: inherit;
+    background: none; border: 2px solid transparent; border-radius: var(--r-xs);
+    cursor: pointer; color: var(--text-2); white-space: nowrap; transition: all 0.2s;
+}
+.nav-btn:hover { background: var(--bg-card); color: var(--text); border-color: var(--border); }
+.nav-btn.active { background: var(--accent); color: var(--accent-t); font-weight: 700; border-color: var(--accent); }
+
+/* Tabs */
+.tab { display: none; animation: fadeIn 0.3s; }
+.tab.active { display: block; }
+
+/* Cards */
+.card {
+    background: var(--bg-card); border-radius: var(--r);
+    box-shadow: var(--shadow); padding: 28px; margin-bottom: 20px;
+    transition: box-shadow 0.2s;
+}
+.card:hover { box-shadow: var(--shadow-h); }
+
+.card-header {
+    font-size: 12px; font-weight: 700; color: var(--text-3);
+    margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+.card-value { font-size: 36px; font-weight: 800; color: var(--text); line-height: 1.2; }
+.card-sub { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+
+.card-accent { background: var(--accent); }
+.card-accent .card-header { color: rgba(0,0,0,0.45); }
+.card-accent .card-value { color: var(--accent-t); }
+.card-accent .card-sub { color: rgba(0,0,0,0.5); }
+
+.card-warning { border-left: 4px solid var(--warn); }
+.card-ok { background: var(--ok-bg); color: var(--ok); padding: 16px 28px; font-weight: 600; font-size: 14px; }
+
+/* Dashboard grid */
+.dash-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 20px;
+}
+
+/* Level */
+.level-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 24px; border-radius: 24px;
+    font-size: 20px; font-weight: 800;
+}
+.level-bronze { background: linear-gradient(135deg, #CD7F32, #E8A862); color: #fff; }
+.level-silver { background: linear-gradient(135deg, #A8A8A8, #D4D4D4); color: #333; }
+.level-gold { background: linear-gradient(135deg, #FFD700, #FFED4A); color: #333; }
+
+/* Ref block */
+.ref-row { display: flex; gap: 10px; align-items: center; }
+.ref-input { flex: 1; font-size: 14px; }
+
+.promo-code {
+    font-size: 22px; font-weight: 800; letter-spacing: 3px;
+    color: var(--accent); background: var(--bg-input);
+    padding: 10px 20px; border-radius: var(--r-xs); border: 2px dashed var(--border);
+}
+
+.label-sm { font-size: 13px; color: var(--text-2); font-weight: 500; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th {
+    text-align: left; padding: 14px 16px; font-weight: 700; font-size: 12px;
+    color: var(--text-3); border-bottom: 2px solid var(--border);
+    text-transform: uppercase; letter-spacing: 0.04em;
+}
+td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text); }
+tbody tr { transition: background 0.15s; }
+tbody tr:hover { background: var(--bg-hover); }
+
+/* Status */
+.status {
+    display: inline-block; padding: 4px 14px; border-radius: 14px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+}
+.st-lead { background: #E5E7EB; color: #374151; }
+.st-in_progress { background: var(--info-bg); color: var(--info); }
+.st-contract { background: var(--warn-bg); color: var(--warn); }
+.st-paid { background: var(--ok-bg); color: var(--ok); }
+.st-new { background: var(--info-bg); color: var(--info); }
+.st-processing { background: var(--warn-bg); color: var(--warn); }
+
+.amt-plus { color: var(--ok); font-weight: 700; }
+.amt-minus { color: var(--err); font-weight: 700; }
+
+/* Form row */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+textarea.input { min-height: 80px; resize: vertical; font-family: inherit; }
+
+select.input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+}
+
+/* Copied animation */
+.btn.copied { background: var(--ok) !important; color: #fff !important; }
+
+/* Progress bar */
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 12px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.6s ease; }
+
+/* Demo banner */
+.demo-banner {
+    background: var(--accent); color: var(--accent-t);
+    text-align: center; padding: 10px; font-size: 13px; font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) {
+    .dash-grid { grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+    .card-value { font-size: 28px; }
+    .form-row { grid-template-columns: 1fr; }
+    .ref-row { flex-direction: column; }
+    .header { flex-direction: column; gap: 12px; text-align: center; }
+    .header-user { display: none; }
+    .auth-card { padding: 32px 24px; }
+    .code-digit { width: 44px; height: 52px; font-size: 22px; }
+    .nav-btn { padding: 8px 16px; font-size: 13px; }
+}
+    </style>
+</head>
+<body data-theme="light">
+
+<!-- Demo banner -->
+<div class="demo-banner">ДЕМО-ВЕРСИЯ — Личный кабинет партнёра</div>
+
+<!-- ===== AUTH SCREEN ===== -->
+<div id="screen-auth" class="screen active">
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <div class="auth-brand">
+                <div class="auth-brand-icon">&#9733;</div>
+                <h1>Партнёрская программа</h1>
+                <p>Приглашайте клиентов и зарабатывайте</p>
+            </div>
+
+            <!-- Step 1: Phone -->
+            <div id="step-phone" class="step active">
+                <div class="form-group">
+                    <label>Номер телефона</label>
+                    <input type="tel" id="inp-phone" class="input" placeholder="+7 (___) ___-__-__">
+                </div>
+                <button class="btn btn-primary" id="btn-otp">Получить код</button>
+                <p class="hint">Код будет отправлен в Telegram</p>
+            </div>
+
+            <!-- Step 2: Code -->
+            <div id="step-code" class="step">
+                <p class="step-info">Код отправлен на <strong id="sent-phone"></strong></p>
+                <div class="code-wrap">
+                    <input type="text" maxlength="1" class="code-digit" data-i="0" inputmode="numeric">
+                    <input type="text" maxlength="1" class="code-digit" data-i="1" inputmode="numeric">
+                    <input type="text" maxlength="1" class="code-digit" data-i="2" inputmode="numeric">
+                    <input type="text" maxlength="1" class="code-digit" data-i="3" inputmode="numeric">
+                    <input type="text" maxlength="1" class="code-digit" data-i="4" inputmode="numeric">
+                    <input type="text" maxlength="1" class="code-digit" data-i="5" inputmode="numeric">
+                </div>
+                <p class="hint" style="margin-bottom:16px">Для демо введите: <strong>123456</strong></p>
+                <button class="btn btn-primary" id="btn-verify">Подтвердить</button>
+                <button class="btn-ghost" id="btn-resend">Отправить повторно <span id="timer"></span></button>
+            </div>
+
+            <!-- Step 3: Register -->
+            <div id="step-reg" class="step">
+                <div class="form-group">
+                    <label>ФИО</label>
+                    <input type="text" id="inp-name" class="input" placeholder="Иванов Иван Иванович">
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="inp-agree">
+                        <span>Согласен с <a href="#">условиями партнёрской программы</a></span>
+                    </label>
+                </div>
+                <button class="btn btn-primary" id="btn-reg">Зарегистрироваться</button>
+            </div>
+
+            <div id="auth-alert" class="alert alert-error"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== CABINET SCREEN ===== -->
+<div id="screen-cabinet" class="screen">
+    <div class="cabinet">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-logo">&#9733; Партнёрская программа</div>
+            <div class="header-right">
+                <button class="btn-icon" id="btn-theme" title="Сменить тему">
+                    <span class="icon-sun">&#9788;</span>
+                    <span class="icon-moon">&#9790;</span>
+                </button>
+                <span class="header-user" id="user-name"></span>
+                <button class="btn btn-outline btn-sm" id="btn-logout">Выйти</button>
+            </div>
+        </header>
+
+        <!-- Nav -->
+        <nav class="nav">
+            <button class="nav-btn active" data-tab="dashboard">Главная</button>
+            <button class="nav-btn" data-tab="referrals">Мои клиенты</button>
+            <button class="nav-btn" data-tab="payouts">Выплаты</button>
+            <button class="nav-btn" data-tab="profile">Профиль</button>
+        </nav>
+
+        <!-- TAB: Dashboard -->
+        <div id="tab-dashboard" class="tab active">
+            <div class="dash-grid">
+                <div class="card">
+                    <div class="card-header">Ваш уровень</div>
+                    <div id="d-level"></div>
+                    <div class="progress-bar"><div class="progress-fill" id="d-progress"></div></div>
+                    <div class="card-sub" id="d-progress-text"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">Начислено всего</div>
+                    <div class="card-value" id="d-accrued"></div>
+                    <div class="card-sub">За всё время</div>
+                </div>
+                <div class="card card-accent">
+                    <div class="card-header">Доступно к выплате</div>
+                    <div class="card-value" id="d-available"></div>
+                    <div class="card-sub">Можно запросить</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">Клиентов привлечено</div>
+                    <div class="card-value" id="d-clients"></div>
+                    <div class="card-sub" id="d-clients-sub"></div>
+                </div>
+            </div>
+
+            <!-- Ref link -->
+            <div class="card">
+                <div class="card-header">Ваша реферальная ссылка</div>
+                <div class="ref-row">
+                    <input type="text" class="input ref-input" id="d-ref-url" readonly>
+                    <button class="btn btn-primary btn-sm" data-copy="d-ref-url" style="width:auto;min-width:140px">Скопировать</button>
+                </div>
+                <div class="ref-row" style="margin-top:14px">
+                    <span class="label-sm">Промокод:</span>
+                    <span class="promo-code" id="d-promo"></span>
+                    <button class="btn btn-outline btn-sm" data-copy="d-promo" style="width:auto">Скопировать</button>
+                </div>
+            </div>
+
+            <!-- TG link -->
+            <div class="card card-ok" id="d-tg-ok" style="display:none">
+                &#10003; Telegram привязан — уведомления включены
+            </div>
+            <div class="card card-warning" id="d-tg-link">
+                <div class="card-header">Привяжите Telegram</div>
+                <p style="color:var(--text-2);font-size:14px;margin-bottom:14px">Для получения уведомлений о начислениях и кодов входа</p>
+                <button class="btn btn-primary" id="btn-link-tg" style="width:auto">Привязать Telegram</button>
+                <div id="tg-link-result" style="display:none;margin-top:14px"></div>
+            </div>
+        </div>
+
+        <!-- TAB: Referrals -->
+        <div id="tab-referrals" class="tab">
+            <div class="card">
+                <div class="card-header">Условия программы</div>
+                <p style="color:var(--text-2);font-size:14px;line-height:1.7">
+                    Приглашайте друзей и знакомых, которым нужна помощь с банкротством.<br>
+                    За каждого оплатившего клиента вы получаете вознаграждение:<br><br>
+                    <strong style="color:var(--text)">&#127942; Бронза</strong> — 5% от суммы договора<br>
+                    <strong style="color:var(--text)">&#129352; Серебро</strong> (от 5 клиентов) — 7% от суммы<br>
+                    <strong style="color:var(--text)">&#129351; Золото</strong> (от 15 клиентов) — 10% от суммы
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Мои клиенты</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Дата</th><th>Клиент</th><th>Статус</th><th>Сумма договора</th><th>Бонус</th><th>Источник</th></tr></thead>
+                        <tbody id="ref-table"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">История начислений</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Дата</th><th>Тип</th><th>Сумма</th><th>Комментарий</th></tr></thead>
+                        <tbody id="tx-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Payouts -->
+        <div id="tab-payouts" class="tab">
+            <div class="card">
+                <div class="card-header">Запросить выплату</div>
+                <p class="hint" style="text-align:left;margin-bottom:16px">Минимальная сумма: 1 000 ₽</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Сумма (₽)</label>
+                        <input type="number" id="pay-amount" class="input" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Способ выплаты</label>
+                        <select id="pay-method" class="input">
+                            <option value="">Выберите</option>
+                            <option value="card">Банковская карта</option>
+                            <option value="account">Расчётный счёт</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Реквизиты</label>
+                    <textarea id="pay-details" class="input" placeholder="Номер карты или реквизиты счёта"></textarea>
+                </div>
+                <button class="btn btn-primary" id="btn-payout" style="width:auto">Отправить заявку</button>
+                <div id="pay-alert" class="alert" style="display:none"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Мои заявки</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Дата</th><th>Сумма</th><th>Способ</th><th>Статус</th><th>Обработано</th></tr></thead>
+                        <tbody id="payout-table"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Profile -->
+        <div id="tab-profile" class="tab">
+            <div class="card">
+                <div class="card-header">Профиль</div>
+                <div class="form-group">
+                    <label>ФИО</label>
+                    <input type="text" id="prof-name" class="input">
+                </div>
+                <div class="form-group">
+                    <label>Телефон</label>
+                    <input type="text" class="input" id="prof-phone" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Город</label>
+                    <input type="text" id="prof-city" class="input" value="Москва">
+                </div>
+                <div class="form-group">
+                    <label>Реквизиты для выплат</label>
+                    <textarea id="prof-payment" class="input" placeholder="Номер карты / реквизиты">4276 **** **** 1234</textarea>
+                </div>
+                <button class="btn btn-primary" id="btn-save-profile" style="width:auto">Сохранить</button>
+                <div id="prof-alert" class="alert" style="display:none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ===== Mock data =====
+const DEMO = {
+    partner: {
+        name: '', phone: '',
+        level: 'bronze', levelName: 'Бронза',
+        accrued: 47500, available: 32500,
+        refCode: 'a7f2b9c1e3d4', promo: 'BANK23',
+        tgLinked: false
+    },
+    referrals: [
+        { date: '15.03.2026', name: 'Петров А.С.', phone: '+7***4521', status: 'paid', amount: 150000, bonus: 7500, src: 'Ссылка' },
+        { date: '12.03.2026', name: 'Сидорова М.И.', phone: '+7***8834', status: 'paid', amount: 200000, bonus: 10000, src: 'Промокод' },
+        { date: '10.03.2026', name: 'Козлов Д.В.', phone: '+7***2210', status: 'contract', amount: 180000, bonus: 0, src: 'Ссылка' },
+        { date: '08.03.2026', name: 'Новикова Е.А.', phone: '+7***6677', status: 'paid', amount: 250000, bonus: 12500, src: 'Ссылка' },
+        { date: '05.03.2026', name: 'Фёдоров И.П.', phone: '+7***3301', status: 'in_progress', amount: 0, bonus: 0, src: 'Промокод' },
+        { date: '01.03.2026', name: 'Морозова Т.К.', phone: '+7***9988', status: 'paid', amount: 350000, bonus: 17500, src: 'Ссылка' },
+        { date: '25.02.2026', name: 'Волков Р.С.', phone: '+7***1155', status: 'lead', amount: 0, bonus: 0, src: 'Ссылка' },
+    ],
+    transactions: [
+        { date: '15.03.2026 14:32', type: 'Начисление', amount: '+7 500 ₽', pos: true, comment: 'Бонус за клиента Петров А.С.' },
+        { date: '12.03.2026 10:15', type: 'Начисление', amount: '+10 000 ₽', pos: true, comment: 'Бонус за клиента Сидорова М.И.' },
+        { date: '10.03.2026 09:00', type: 'Выплата', amount: '-15 000 ₽', pos: false, comment: 'Выплата #3 на карту' },
+        { date: '08.03.2026 16:45', type: 'Начисление', amount: '+12 500 ₽', pos: true, comment: 'Бонус за клиента Новикова Е.А.' },
+        { date: '01.03.2026 11:20', type: 'Начисление', amount: '+17 500 ₽', pos: true, comment: 'Бонус за клиента Морозова Т.К.' },
+    ],
+    payouts: [
+        { date: '10.03.2026', amount: '15 000 ₽', method: 'Карта', status: 'paid', statusLabel: 'Выплачено', proc: '11.03.2026' },
+        { date: '20.02.2026', amount: '8 000 ₽', method: 'Карта', status: 'paid', statusLabel: 'Выплачено', proc: '22.02.2026' },
+    ]
+};
+
+const statusLabels = { lead: 'Лид', in_progress: 'В работе', contract: 'Договор', paid: 'Оплачен' };
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+// ===== Theme =====
+function initTheme() {
+    const saved = localStorage.getItem('pc_demo_theme');
+    const pref = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', saved || pref);
+
+    $('#btn-theme')?.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        localStorage.setItem('pc_demo_theme', next);
+    });
+}
+
+// ===== Screens =====
+function showScreen(id) {
+    $$('.screen').forEach(s => s.classList.remove('active'));
+    $(`#screen-${id}`)?.classList.add('active');
+}
+
+function showStep(id) {
+    $$('.step').forEach(s => s.classList.remove('active'));
+    $(`#step-${id}`)?.classList.add('active');
+}
+
+// ===== Auth =====
+function initAuth() {
+    const phoneInput = $('#inp-phone');
+    phoneInput?.addEventListener('input', () => {
+        let v = phoneInput.value.replace(/\D/g, '');
+        if (v.startsWith('8')) v = '7' + v.slice(1);
+        if (!v.startsWith('7')) v = '7' + v;
+        let f = '+7';
+        if (v.length > 1) f += ' (' + v.slice(1,4);
+        if (v.length > 4) f += ') ' + v.slice(4,7);
+        if (v.length > 7) f += '-' + v.slice(7,9);
+        if (v.length > 9) f += '-' + v.slice(9,11);
+        phoneInput.value = f;
+    });
+
+    // Request OTP
+    $('#btn-otp')?.addEventListener('click', () => {
+        const p = phoneInput.value;
+        if (p.replace(/\D/g,'').length < 11) return showAlert('auth-alert','error','Введите корректный номер');
+        hideAlert('auth-alert');
+        DEMO.partner.phone = p;
+        $('#sent-phone').textContent = p;
+        showStep('code');
+        startTimer();
+        setTimeout(() => $('.code-digit[data-i="0"]')?.focus(), 200);
+    });
+
+    // Code digits
+    $$('.code-digit').forEach(inp => {
+        inp.addEventListener('input', e => {
+            const v = e.target.value.replace(/\D/g,'');
+            e.target.value = v.slice(0,1);
+            if (v) { e.target.classList.add('filled'); }
+            else { e.target.classList.remove('filled'); }
+            if (v && +e.target.dataset.i < 5) {
+                $(`.code-digit[data-i="${+e.target.dataset.i+1}"]`)?.focus();
+            }
+            if (getCode().length === 6) setTimeout(() => $('#btn-verify')?.click(), 150);
+        });
+        inp.addEventListener('keydown', e => {
+            if (e.key === 'Backspace' && !e.target.value && +e.target.dataset.i > 0) {
+                const prev = $(`.code-digit[data-i="${+e.target.dataset.i-1}"]`);
+                if (prev) { prev.focus(); prev.value = ''; prev.classList.remove('filled'); }
+            }
+        });
+        inp.addEventListener('paste', e => {
+            e.preventDefault();
+            const txt = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+            txt.split('').slice(0,6).forEach((c,i) => {
+                const el = $(`.code-digit[data-i="${i}"]`);
+                if (el) { el.value = c; el.classList.add('filled'); }
+            });
+            if (txt.length >= 6) setTimeout(() => $('#btn-verify')?.click(), 150);
+        });
+    });
+
+    // Verify
+    $('#btn-verify')?.addEventListener('click', () => {
+        const code = getCode();
+        if (code !== '123456') {
+            showAlert('auth-alert','error','Неверный код. Подсказка: 123456');
+            $$('.code-digit').forEach(el => { el.value=''; el.classList.remove('filled'); });
+            $('.code-digit[data-i="0"]')?.focus();
+            return;
+        }
+        hideAlert('auth-alert');
+        // Check if returning user
+        const saved = localStorage.getItem('pc_demo_user');
+        if (saved) {
+            DEMO.partner.name = saved;
+            enterCabinet();
+        } else {
+            showStep('reg');
+        }
+    });
+
+    // Register
+    $('#btn-reg')?.addEventListener('click', () => {
+        const name = $('#inp-name').value.trim();
+        const agree = $('#inp-agree').checked;
+        if (!name) return showAlert('auth-alert','error','Введите ФИО');
+        if (!agree) return showAlert('auth-alert','error','Примите условия программы');
+        hideAlert('auth-alert');
+        DEMO.partner.name = name;
+        localStorage.setItem('pc_demo_user', name);
+        enterCabinet();
+    });
+
+    // Resend
+    $('#btn-resend')?.addEventListener('click', () => showStep('phone'));
+}
+
+function getCode() { return Array.from($$('.code-digit')).map(e=>e.value).join(''); }
+
+function startTimer() {
+    const el = $('#timer');
+    let sec = 60;
+    $('#btn-resend').disabled = true;
+    const iv = setInterval(() => {
+        sec--;
+        el.textContent = `(${sec}с)`;
+        if (sec <= 0) { clearInterval(iv); el.textContent=''; $('#btn-resend').disabled=false; }
+    }, 1000);
+}
+
+// ===== Cabinet =====
+function enterCabinet() {
+    showScreen('cabinet');
+    renderDashboard();
+    renderReferrals();
+    renderTransactions();
+    renderPayouts();
+
+    $('#user-name').textContent = DEMO.partner.name;
+    $('#prof-name').value = DEMO.partner.name;
+    $('#prof-phone').value = DEMO.partner.phone;
+}
+
+function renderDashboard() {
+    const p = DEMO.partner;
+    const total = DEMO.referrals.length;
+    const paid = DEMO.referrals.filter(r => r.status === 'paid').length;
+
+    $('#d-level').innerHTML = `<span class="level-badge level-${p.level}">${p.levelName}</span>`;
+    $('#d-accrued').textContent = fmt(p.accrued) + ' ₽';
+    $('#d-available').textContent = fmt(p.available) + ' ₽';
+    $('#d-clients').textContent = total;
+    $('#d-clients-sub').textContent = `${paid} оплатили`;
+
+    $('#d-ref-url').value = `https://bankrotstvo-help.ru/?ref=${p.refCode}`;
+    $('#d-promo').textContent = p.promo;
+
+    // Progress to next level
+    const nextAt = 5;
+    const pct = Math.min(100, (paid / nextAt) * 100);
+    $('#d-progress').style.width = pct + '%';
+    $('#d-progress-text').textContent = `До уровня «Серебро»: ${paid} из ${nextAt} клиентов`;
+
+    // TG
+    if (p.tgLinked) {
+        $('#d-tg-ok').style.display = 'block';
+        $('#d-tg-link').style.display = 'none';
+    }
+}
+
+function renderReferrals() {
+    const tbody = $('#ref-table');
+    tbody.innerHTML = DEMO.referrals.map(r => `<tr>
+        <td>${r.date}</td>
+        <td>${r.name}<br><small style="color:var(--text-3)">${r.phone}</small></td>
+        <td><span class="status st-${r.status}">${statusLabels[r.status]}</span></td>
+        <td>${r.amount ? fmt(r.amount) + ' ₽' : '—'}</td>
+        <td>${r.bonus ? fmt(r.bonus) + ' ₽' : '—'}</td>
+        <td>${r.src}</td>
+    </tr>`).join('');
+}
+
+function renderTransactions() {
+    const tbody = $('#tx-table');
+    tbody.innerHTML = DEMO.transactions.map(t => `<tr>
+        <td>${t.date}</td>
+        <td>${t.type}</td>
+        <td class="${t.pos ? 'amt-plus' : 'amt-minus'}">${t.amount}</td>
+        <td>${t.comment}</td>
+    </tr>`).join('');
+}
+
+function renderPayouts() {
+    const tbody = $('#payout-table');
+    tbody.innerHTML = DEMO.payouts.map(p => `<tr>
+        <td>${p.date}</td>
+        <td>${p.amount}</td>
+        <td>${p.method}</td>
+        <td><span class="status st-${p.status}">${p.statusLabel}</span></td>
+        <td>${p.proc}</td>
+    </tr>`).join('');
+}
+
+// ===== Cabinet interactions =====
+function initCabinet() {
+    // Nav tabs
+    $$('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            $$('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            $$('.tab').forEach(t => t.classList.remove('active'));
+            $(`#tab-${btn.dataset.tab}`)?.classList.add('active');
+        });
+    });
+
+    // Logout
+    $('#btn-logout')?.addEventListener('click', () => {
+        showScreen('auth');
+        showStep('phone');
+        $$('.code-digit').forEach(el => { el.value=''; el.classList.remove('filled'); });
+    });
+
+    // Copy
+    document.addEventListener('click', e => {
+        if (e.target.dataset.copy) {
+            const el = $(`#${e.target.dataset.copy}`);
+            const text = el?.value || el?.textContent || '';
+            navigator.clipboard.writeText(text).then(() => {
+                e.target.classList.add('copied');
+                const orig = e.target.textContent;
+                e.target.textContent = 'Скопировано!';
+                setTimeout(() => { e.target.classList.remove('copied'); e.target.textContent = orig; }, 1500);
+            });
+        }
+    });
+
+    // Link TG
+    $('#btn-link-tg')?.addEventListener('click', () => {
+        const res = $('#tg-link-result');
+        res.innerHTML = '<a href="https://t.me/BankrotPartnerBot?start=link_demo123" target="_blank" class="btn btn-outline btn-sm" style="width:auto">&#10148; Открыть Telegram-бот</a>';
+        res.style.display = 'block';
+        setTimeout(() => {
+            DEMO.partner.tgLinked = true;
+            renderDashboard();
+        }, 3000);
+    });
+
+    // Payout
+    $('#btn-payout')?.addEventListener('click', () => {
+        const amount = +$('#pay-amount').value;
+        const method = $('#pay-method').value;
+        if (amount < 1000) return showAlert('pay-alert','error','Минимальная сумма: 1 000 ₽');
+        if (amount > DEMO.partner.available) return showAlert('pay-alert','error','Недостаточно средств');
+        if (!method) return showAlert('pay-alert','error','Выберите способ выплаты');
+
+        DEMO.payouts.unshift({
+            date: new Date().toLocaleDateString('ru-RU'), amount: fmt(amount) + ' ₽',
+            method: method === 'card' ? 'Карта' : method === 'account' ? 'Счёт' : 'Другое',
+            status: 'new', statusLabel: 'Новая', proc: '—'
+        });
+        DEMO.partner.available -= amount;
+
+        showAlert('pay-alert','success','Заявка создана! Ожидайте обработки.');
+        $('#pay-amount').value = '';
+        renderPayouts();
+        renderDashboard();
+    });
+
+    // Save profile
+    $('#btn-save-profile')?.addEventListener('click', () => {
+        DEMO.partner.name = $('#prof-name').value;
+        $('#user-name').textContent = DEMO.partner.name;
+        localStorage.setItem('pc_demo_user', DEMO.partner.name);
+        showAlert('prof-alert','success','Профиль сохранён');
+    });
+}
+
+// ===== Utils =====
+function fmt(n) { return Number(n).toLocaleString('ru-RU'); }
+
+function showAlert(id, type, msg) {
+    const el = $(`#${id}`);
+    el.className = `alert alert-${type === 'error' ? 'error' : 'success'}`;
+    el.textContent = msg;
+    el.style.display = 'block';
+    if (type === 'success') setTimeout(() => el.style.display = 'none', 3000);
+}
+
+function hideAlert(id) { $(`#${id}`).style.display = 'none'; }
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    initAuth();
+    initCabinet();
+});
+
+})();
+</script>
+
+</body>
+</html>
