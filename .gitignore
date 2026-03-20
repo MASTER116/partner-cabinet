@@ -4,3 +4,4 @@ partner.db
 .env
 partner.db-shm
 partner.db-wal
+test_run.db*

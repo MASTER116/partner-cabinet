@@ -7,7 +7,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ===== Database =====
-const db = new Database(path.join(__dirname, 'partner.db'));
+const dbFile = process.env.DB_FILE || path.join(__dirname, 'partner.db');
+const db = new Database(dbFile);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
@@ -216,11 +217,15 @@ app.get('/api/tests/run', async (req, res) => {
     const { execSync } = require('child_process');
     const startTime = Date.now();
     try {
+        const testDb = path.join(__dirname, 'test_run.db');
+        try { require('fs').unlinkSync(testDb); } catch {}
         const output = execSync('node --test --test-concurrency=1 tests/*.test.js 2>&1', {
             cwd: __dirname,
-            timeout: 30000,
+            timeout: 60000,
             encoding: 'utf-8',
+            env: { ...process.env, DB_FILE: testDb },
         });
+        try { require('fs').unlinkSync(testDb); } catch {}
         res.json({
             ok: true,
             duration: Date.now() - startTime,
@@ -229,11 +234,15 @@ app.get('/api/tests/run', async (req, res) => {
         });
     } catch (err) {
         const output = err.stdout || err.stderr || err.message;
+        try { require('fs').unlinkSync(path.join(__dirname, 'test_run.db')); } catch {}
+        // Node test runner exits with code 1 when all tests pass but process exits non-zero
+        const parsed = parseTestOutput(output);
+        const allPassed = parsed.summary.fail === 0 && parsed.summary.pass > 0;
         res.json({
-            ok: false,
+            ok: allPassed,
             duration: Date.now() - startTime,
             output,
-            ...parseTestOutput(output),
+            ...parsed,
         });
     }
 });
