@@ -5,3 +5,4 @@ partner.db
 partner.db-shm
 partner.db-wal
 test_run.db*
+recordings/
