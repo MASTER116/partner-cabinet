@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Тесты — Партнёрский кабинет</title>
+<title>Проверка системы — Партнёрский кабинет</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -18,79 +18,91 @@
     --r:16px;--rx:8px;
     --sh:0 1px 3px rgba(0,0,0,.4);--shh:0 4px 16px rgba(0,0,0,.5)
 }
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);line-height:1.5;-webkit-font-smoothing:antialiased}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);line-height:1.6;-webkit-font-smoothing:antialiased}
 
-.container{max-width:1000px;margin:0 auto;padding:20px}
+.container{max-width:860px;margin:0 auto;padding:20px}
 .header{display:flex;align-items:center;justify-content:space-between;padding:20px 0;border-bottom:1px solid var(--bd);margin-bottom:28px}
 .logo{font-size:20px;font-weight:800}
 .back{color:var(--t2);text-decoration:none;font-size:14px;font-weight:500;padding:8px 16px;border:2px solid var(--bd);border-radius:var(--rx)}.back:hover{border-color:var(--ac);color:var(--ac)}
 
-/* Run button */
-.run-area{text-align:center;margin:40px 0}
+/* Hero */
+.hero{text-align:center;margin:40px 0 30px}
+.hero h1{font-size:28px;font-weight:800;margin-bottom:8px}
+.hero p{color:var(--t2);font-size:15px;max-width:560px;margin:0 auto 30px}
+
 .btn-run{
     display:inline-flex;align-items:center;gap:12px;
-    padding:18px 48px;font-size:18px;font-weight:700;font-family:inherit;
+    padding:20px 56px;font-size:20px;font-weight:700;font-family:inherit;
     background:var(--ac);color:var(--act);border:none;border-radius:var(--rx);
     cursor:pointer;transition:all .2s;
 }
-.btn-run:hover{box-shadow:var(--shh);transform:translateY(-1px)}
+.btn-run:hover{box-shadow:var(--shh);transform:translateY(-2px)}
 .btn-run:active{transform:scale(.97)}
 .btn-run:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-run .spinner{display:none;width:20px;height:20px;border:3px solid rgba(0,0,0,.2);border-top-color:var(--act);border-radius:50%;animation:spin .7s linear infinite}
+.btn-run .spinner{display:none;width:22px;height:22px;border:3px solid rgba(0,0,0,.2);border-top-color:var(--act);border-radius:50%;animation:spin .7s linear infinite}
 .btn-run.loading .spinner{display:block}
 .btn-run.loading .play{display:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Summary */
-.summary{display:none;margin:30px 0;padding:28px;background:var(--bgc);border-radius:var(--r);box-shadow:var(--sh)}
-.summary.visible{display:block;animation:fadeIn .4s}
+.loading-text{display:none;color:var(--t3);font-size:14px;margin-top:16px;animation:pulse 1.5s infinite}
+.loading-text.visible{display:block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
-.summary-card{text-align:center;padding:16px;border-radius:var(--rx);background:var(--bgi)}
-.summary-card .num{font-size:36px;font-weight:800;line-height:1.2}
-.summary-card .label{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
-.num-pass{color:var(--ok)}.num-fail{color:var(--err)}.num-total{color:var(--ac)}.num-time{color:var(--info)}
+/* Big verdict */
+.verdict{display:none;text-align:center;margin:30px 0;padding:40px;border-radius:var(--r);animation:fadeIn .5s}
+.verdict.visible{display:block}
+.verdict.pass{background:var(--okb);border:2px solid var(--ok)}
+.verdict.fail{background:var(--errb);border:2px solid var(--err)}
+.verdict-icon{font-size:64px;margin-bottom:12px}
+.verdict-title{font-size:24px;font-weight:800}
+.verdict.pass .verdict-title{color:var(--ok)}
+.verdict.fail .verdict-title{color:var(--err)}
+.verdict-sub{color:var(--t2);font-size:15px;margin-top:8px}
 
-.summary-bar{height:8px;border-radius:4px;background:var(--errb);overflow:hidden;margin-bottom:8px}
-.summary-bar-fill{height:100%;border-radius:4px;background:var(--ok);transition:width .6s ease}
-.summary-status{text-align:center;font-size:14px;font-weight:600}
-.summary-status.pass{color:var(--ok)}.summary-status.fail{color:var(--err)}
+/* Stats row */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
+.stat{text-align:center;padding:16px;border-radius:var(--rx);background:var(--bgc)}
+.stat .num{font-size:32px;font-weight:800;line-height:1.2}
+.stat .lbl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+.num-ok{color:var(--ok)}.num-err{color:var(--err)}.num-all{color:var(--ac)}.num-time{color:var(--info)}
 
-/* Suites */
-.suites{display:flex;flex-direction:column;gap:12px;margin-top:20px}
-.suite{background:var(--bgc);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;animation:fadeIn .3s}
-.suite-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;user-select:none;transition:background .15s}
-.suite-header:hover{background:var(--bgh)}
-.suite-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
-.suite-icon.pass{background:var(--okb);color:var(--ok)}.suite-icon.fail{background:var(--errb);color:var(--err)}
-.suite-name{flex:1;font-weight:600;font-size:15px}
-.suite-dur{font-size:12px;color:var(--t3);font-weight:500}
-.suite-count{font-size:12px;color:var(--t2);background:var(--bgi);padding:3px 10px;border-radius:10px}
-.suite-arrow{color:var(--t3);font-size:12px;transition:transform .2s}
-.suite.open .suite-arrow{transform:rotate(90deg)}
+/* Checklist — human readable */
+.checklist{margin-top:24px}
+.check-group{background:var(--bgc);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:16px;overflow:hidden;animation:fadeIn .3s}
+.check-group-header{padding:18px 24px;display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none;transition:background .15s}
+.check-group-header:hover{background:var(--bgh)}
+.check-group-icon{font-size:24px;flex-shrink:0}
+.check-group-title{flex:1;font-weight:700;font-size:16px}
+.check-group-badge{font-size:13px;font-weight:600;padding:4px 14px;border-radius:14px}
+.check-group-badge.pass{background:var(--okb);color:var(--ok)}
+.check-group-badge.fail{background:var(--errb);color:var(--err)}
+.check-group-arrow{color:var(--t3);font-size:12px;transition:transform .2s}
+.check-group.open .check-group-arrow{transform:rotate(90deg)}
 
-.suite-body{display:none;border-top:1px solid var(--bd)}
-.suite.open .suite-body{display:block}
+.check-group-body{display:none;border-top:1px solid var(--bd);padding:4px 0}
+.check-group.open .check-group-body{display:block}
 
-.test-row{display:flex;align-items:center;gap:10px;padding:10px 20px 10px 56px;border-bottom:1px solid var(--bd);font-size:13px;transition:background .1s}
-.test-row:last-child{border-bottom:none}
-.test-row:hover{background:var(--bgh)}
-.test-icon{font-size:14px;flex-shrink:0}
-.test-icon.pass{color:var(--ok)}.test-icon.fail{color:var(--err)}
-.test-name{flex:1;color:var(--t2)}
-.test-dur{font-size:11px;color:var(--t3)}
+.check-item{display:flex;align-items:flex-start;gap:12px;padding:12px 24px 12px 62px;border-bottom:1px solid var(--bd);font-size:14px}
+.check-item:last-child{border-bottom:none}
+.check-mark{font-size:18px;flex-shrink:0;margin-top:1px}
+.check-mark.pass{color:var(--ok)}
+.check-mark.fail{color:var(--err)}
+.check-text{flex:1}
+.check-text .what{color:var(--t);font-weight:500}
+.check-text .detail{color:var(--t3);font-size:12px;margin-top:2px}
 
-/* Raw output */
-.raw-toggle{text-align:center;margin-top:20px}
-.raw-toggle button{background:none;border:2px solid var(--bd);color:var(--t2);font-size:13px;font-family:inherit;padding:8px 20px;border-radius:var(--rx);cursor:pointer}.raw-toggle button:hover{border-color:var(--ac);color:var(--ac)}
-.raw-output{display:none;margin-top:16px;padding:20px;background:var(--bgi);border-radius:var(--rx);font-size:12px;font-family:'Courier New',monospace;white-space:pre-wrap;word-break:break-all;max-height:400px;overflow-y:auto;color:var(--t2);line-height:1.7}
+/* Raw toggle */
+.raw-area{text-align:center;margin-top:24px}
+.raw-btn{background:none;border:1px solid var(--bd);color:var(--t3);font-size:12px;font-family:inherit;padding:6px 16px;border-radius:var(--rx);cursor:pointer}.raw-btn:hover{border-color:var(--t3);color:var(--t2)}
+.raw-output{display:none;margin-top:12px;padding:16px;background:var(--bgi);border-radius:var(--rx);font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;color:var(--t3);line-height:1.6}
 .raw-output.visible{display:block}
 
 @media(max-width:640px){
-    .summary-grid{grid-template-columns:1fr 1fr}
-    .suite-header{padding:14px 16px}
-    .test-row{padding-left:40px}
+    .stats{grid-template-columns:1fr 1fr}
+    .hero h1{font-size:22px}
+    .btn-run{padding:16px 36px;font-size:17px}
+    .check-item{padding-left:48px}
 }
 </style>
 </head>
@@ -98,51 +110,181 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);line-hei
 
 <div class="container">
     <header class="header">
-        <div class="logo">&#9881; Тесты</div>
+        <div class="logo">&#9881; Проверка системы</div>
         <a href="/" class="back">&#8592; В кабинет</a>
     </header>
 
-    <div class="run-area">
+    <div class="hero">
+        <h1>Проверка работоспособности</h1>
+        <p>Нажмите кнопку — система автоматически проверит все функции: авторизацию, начисление бонусов, выплаты, админку и безопасность. Результат понятен без технических знаний.</p>
         <button class="btn-run" id="btn-run">
             <span class="play">&#9654;</span>
             <span class="spinner"></span>
-            Запустить тесты
+            Проверить всё
         </button>
-        <p style="color:var(--t3);font-size:13px;margin-top:12px">64 интеграционных и A/B теста</p>
+        <div class="loading-text" id="loading-text">Проверяю... обычно занимает 5-10 секунд</div>
     </div>
 
-    <div class="summary" id="summary">
-        <div class="summary-grid">
-            <div class="summary-card"><div class="num num-total" id="s-total">—</div><div class="label">Всего</div></div>
-            <div class="summary-card"><div class="num num-pass" id="s-pass">—</div><div class="label">Пройдено</div></div>
-            <div class="summary-card"><div class="num num-fail" id="s-fail">—</div><div class="label">Провалено</div></div>
-            <div class="summary-card"><div class="num num-time" id="s-time">—</div><div class="label">Время (мс)</div></div>
-        </div>
-        <div class="summary-bar"><div class="summary-bar-fill" id="s-bar"></div></div>
-        <div class="summary-status" id="s-status"></div>
+    <div class="verdict" id="verdict">
+        <div class="verdict-icon" id="v-icon"></div>
+        <div class="verdict-title" id="v-title"></div>
+        <div class="verdict-sub" id="v-sub"></div>
     </div>
 
-    <div class="suites" id="suites"></div>
-
-    <div class="raw-toggle" id="raw-toggle" style="display:none">
-        <button id="btn-raw">Показать вывод консоли</button>
+    <div class="stats" id="stats" style="display:none">
+        <div class="stat"><div class="num num-all" id="s-total">—</div><div class="lbl">Всего проверок</div></div>
+        <div class="stat"><div class="num num-ok" id="s-pass">—</div><div class="lbl">Работает</div></div>
+        <div class="stat"><div class="num num-err" id="s-fail">—</div><div class="lbl">Проблемы</div></div>
+        <div class="stat"><div class="num num-time" id="s-time">—</div><div class="lbl">Время (сек)</div></div>
     </div>
-    <pre class="raw-output" id="raw-output"></pre>
+
+    <div class="checklist" id="checklist"></div>
+
+    <div class="raw-area" id="raw-area" style="display:none">
+        <button class="raw-btn" id="btn-raw">Технические подробности (для разработчика)</button>
+        <pre class="raw-output" id="raw-output"></pre>
+    </div>
 </div>
 
 <script>
 (function(){
 const $=s=>document.querySelector(s);
 const btn=$('#btn-run');
-const summary=$('#summary');
-const suitesEl=$('#suites');
+
+// Человеческие названия для групп тестов
+const groupNames = {
+    'POST /api/auth/request-otp': { icon: '&#128241;', title: 'Отправка кода на телефон', items: {
+        'должен вернуть ошибку при коротком номере': 'Блокирует некорректный номер',
+        'должен отправить OTP для существующего партнёра': 'Отправляет код зарегистрированному партнёру',
+        'должен отправить OTP для нового номера': 'Отправляет код новому пользователю',
+    }},
+    'POST /api/auth/verify-otp': { icon: '&#128272;', title: 'Проверка кода входа', items: {
+        'должен вернуть ошибку при неверном коде': 'Не пускает с неверным кодом',
+        'должен авторизовать при верном коде': 'Авторизует при правильном коде',
+        'должен предложить регистрацию для нового номера': 'Предлагает регистрацию новому пользователю',
+        'должен заблокировать после 5 неверных попыток': 'Блокирует после 5 ошибок (защита от подбора)',
+    }},
+    'POST /api/auth/register': { icon: '&#128100;', title: 'Регистрация нового партнёра', items: {
+        'должен зарегистрировать нового партнёра': 'Создаёт аккаунт с реферальной ссылкой',
+        'должен отклонить дублирующий телефон': 'Не даёт создать второй аккаунт на тот же номер',
+        'должен отклонить без ФИО': 'Требует заполнить ФИО',
+    }},
+    'POST /api/auth/logout': { icon: '&#128682;', title: 'Выход из системы', items: {
+        'должен разлогинить': 'Корректно завершает сессию',
+    }},
+    'GET /api/partner/dashboard': { icon: '&#128200;', title: 'Личный кабинет — главная', items: {
+        'должен вернуть 401 без токена': 'Не показывает данные без авторизации',
+        'должен вернуть данные дашборда': 'Отображает баланс, уровень, клиентов',
+        'должен вернуть информацию о следующем уровне': 'Показывает прогресс до следующего уровня',
+    }},
+    'GET /api/partner/referrals': { icon: '&#128101;', title: 'Список привлечённых клиентов', items: {
+        'должен вернуть список рефералов': 'Загружает таблицу клиентов со статусами',
+        'должен поддерживать пагинацию': 'Работает постраничная навигация',
+        'должен маскировать телефоны клиентов': 'Скрывает полные номера телефонов (приватность)',
+    }},
+    'GET /api/partner/transactions': { icon: '&#128176;', title: 'История начислений и списаний', items: {
+        'должен вернуть историю транзакций': 'Загружает историю всех операций',
+    }},
+    'POST /api/partner/update-profile': { icon: '&#9998;', title: 'Редактирование профиля', items: {
+        'должен обновить профиль': 'Сохраняет ФИО, город, реквизиты',
+        'должен отклонить без ФИО': 'Не позволяет удалить ФИО',
+    }},
+    'POST /api/partner/link-telegram': { icon: '&#128172;', title: 'Привязка Telegram', items: {
+        'должен вернуть ссылку для привязки': 'Генерирует ссылку на Telegram-бот',
+    }},
+    'POST /api/partner/confirm-telegram': { icon: '&#9989;', title: 'Подтверждение Telegram', items: {
+        'должен привязать Telegram': 'Включает уведомления через Telegram',
+    }},
+    'GET /api/partner/payouts': { icon: '&#128179;', title: 'Список заявок на выплату', items: {
+        'должен вернуть список выплат': 'Загружает историю заявок со статусами',
+    }},
+    'POST /api/partner/request-payout': { icon: '&#128184;', title: 'Запрос выплаты', items: {
+        'должен отклонить сумму ниже минимальной': 'Не даёт запросить меньше минимума (1000 ₽)',
+        'должен отклонить без способа выплаты': 'Требует выбрать способ (карта / счёт)',
+        'должен отклонить сумму больше баланса': 'Не даёт запросить больше, чем на балансе',
+        'должен создать заявку на выплату': 'Создаёт заявку и отправляет админу',
+        'должен блокировать вторую заявку если есть необработанная': 'Одна заявка за раз (защита от спама)',
+    }},
+    'GET /api/admin/partners': { icon: '&#128188;', title: 'Админка: список партнёров', items: {
+        'должен вернуть список партнёров': 'Загружает всех партнёров с балансами',
+        'должен искать по имени': 'Поиск по ФИО работает',
+        'должен искать по телефону': 'Поиск по номеру работает',
+        'должен вернуть пустой список при несуществующем поиске': 'Пустой результат без ошибок',
+    }},
+    'GET /api/admin/partner/:id': { icon: '&#128196;', title: 'Админка: карточка партнёра', items: {
+        'должен вернуть данные партнёра и уровни': 'Открывает профиль с возможностью редактирования',
+    }},
+    'POST /api/admin/partner/:id/level': { icon: '&#127942;', title: 'Админка: смена уровня', items: {
+        'должен изменить уровень партнёра': 'Меняет уровень (Бронза → Серебро → Золото)',
+    }},
+    'POST /api/admin/partner/:id/adjust': { icon: '&#9878;', title: 'Админка: коррекция баланса', items: {
+        'должен добавить бонус': 'Ручное начисление бонусов',
+        'должен списать бонус': 'Ручное списание бонусов',
+        'должен отклонить нулевую сумму': 'Блокирует нулевые операции',
+    }},
+    'GET /api/admin/referrals': { icon: '&#128203;', title: 'Админка: все клиенты', items: {
+        'должен вернуть список всех рефералов': 'Загружает всех клиентов всех партнёров',
+    }},
+    'POST /api/admin/referral/:id — автоначисление бонуса': { icon: '&#9889;', title: 'Автоматическое начисление бонуса', items: {
+        'должен начислить бонус при смене статуса на paid': 'Бонус считается автоматически при оплате клиентом',
+        'должен отклонить недопустимый статус': 'Блокирует некорректные статусы',
+    }},
+    'Админ: Выплаты': { icon: '&#128178;', title: 'Админка: обработка выплат', items: {
+        'GET /api/admin/payouts должен вернуть список': 'Загружает все заявки на выплату',
+        'POST /api/admin/payout/:id — обработка выплаты': 'Одобрение выплаты списывает с баланса',
+    }},
+    'Админ: Настройки': { icon: '&#9881;', title: 'Админка: настройки программы', items: {
+        'GET /api/admin/settings должен вернуть настройки и уровни': 'Загружает все настройки и уровни',
+        'POST /api/admin/settings должен сохранить настройки': 'Сохраняет изменения настроек',
+        'POST /api/admin/levels должен обновить уровни': 'Обновляет уровни (Бронза/Серебро/Золото)',
+    }},
+    'Админ: Экспорт CSV': { icon: '&#128190;', title: 'Выгрузка данных в Excel/CSV', items: {
+        'GET /api/admin/export/partners должен вернуть CSV': 'Экспорт партнёров в таблицу',
+        'GET /api/admin/export/payouts должен вернуть CSV': 'Экспорт выплат в таблицу',
+    }},
+    'GET /health': { icon: '&#128154;', title: 'Сервер работает', items: {
+        'должен вернуть статус ok': 'Сервер отвечает корректно',
+    }},
+    // A/B тесты
+    'A/B: Путь нового партнёра (регистрация → дашборд)': { icon: '&#128694;', title: 'Сценарий: новый партнёр регистрируется', items: {
+        'Шаг 1: Запрос OTP → новый пользователь': 'Получает код на новый номер',
+        'Шаг 2: Подтверждение кода → предложение регистрации': 'Система предлагает заполнить анкету',
+        'Шаг 3: Регистрация → авторизация': 'Создаёт аккаунт и входит',
+        'Шаг 4: Дашборд → начальный уровень, нулевой баланс': 'Видит кабинет: Бронза, 0 ₽, 0 клиентов',
+    }},
+    'A/B: Путь возвращающегося партнёра (вход → просмотр данных)': { icon: '&#128260;', title: 'Сценарий: партнёр возвращается в кабинет', items: {
+        'Шаг 1: Вход по OTP': 'Входит по коду',
+        'Шаг 2: Дашборд отображает баланс и клиентов': 'Видит свой баланс и статистику',
+        'Шаг 3: Рефералы отображаются корректно': 'Таблица клиентов загружается',
+        'Шаг 4: Транзакции доступны': 'История операций доступна',
+    }},
+    'A/B: Путь выплаты (запрос → обработка админом)': { icon: '&#128176;', title: 'Сценарий: партнёр запрашивает выплату', items: {
+        'Шаг 1: Партнёр авторизуется': 'Входит в кабинет',
+        'Шаг 2: Партнёр запрашивает выплату': 'Отправляет заявку на 5000 ₽',
+        'Шаг 3: Заявка видна в списке выплат партнёра': 'Партнёр видит заявку «Новая»',
+        'Шаг 4: Админ видит заявку': 'В админке появилась заявка',
+        'Шаг 5: Админ одобряет → баланс списывается': 'После одобрения баланс уменьшился на 5000 ₽',
+    }},
+    'A/B: Путь администратора (клиент оплатил → бонус начислен)': { icon: '&#127775;', title: 'Сценарий: клиент оплатил — бонус партнёру', items: {
+        'Сквозной сценарий: смена статуса клиента → автоначисление бонуса → повышение уровня': 'Админ ставит «Оплачен» → бонус начисляется → уровень пересчитывается',
+    }},
+    'A/B: Антифрод — регистрация дублей': { icon: '&#128737;', title: 'Защита: нельзя создать дубль аккаунта', items: {
+        'нельзя зарегистрировать второй аккаунт на тот же телефон': 'Система блокирует повторную регистрацию',
+    }},
+    'A/B: Изоляция данных между партнёрами': { icon: '&#128274;', title: 'Безопасность: партнёры не видят чужие данные', items: {
+        'партнёр видит только свои данные': 'Каждый видит только своих клиентов',
+    }},
+};
 
 btn.addEventListener('click', async()=>{
     btn.disabled=true;
     btn.classList.add('loading');
-    summary.classList.remove('visible');
-    suitesEl.innerHTML='';
-    $('#raw-toggle').style.display='none';
+    $('#loading-text').classList.add('visible');
+    $('#verdict').classList.remove('visible');
+    $('#verdict').className='verdict';
+    $('#stats').style.display='none';
+    $('#checklist').innerHTML='';
+    $('#raw-area').style.display='none';
     $('#raw-output').classList.remove('visible');
 
     try{
@@ -150,78 +292,83 @@ btn.addEventListener('click', async()=>{
         const d=await r.json();
         renderResults(d);
     }catch(e){
-        alert('Ошибка запуска: '+e.message);
+        showVerdict(false, 'Ошибка соединения', e.message);
     }
 
     btn.disabled=false;
     btn.classList.remove('loading');
+    $('#loading-text').classList.remove('visible');
 });
 
 function renderResults(d){
     const s=d.summary;
+    const allOk = s.fail===0 && s.pass>0;
 
-    // Summary
+    // Verdict
+    if(allOk){
+        showVerdict(true, 'Всё работает!', `${s.total} проверок пройдено за ${(d.duration/1000).toFixed(1)} сек. Система полностью работоспособна.`);
+    } else {
+        showVerdict(false, `Найдены проблемы: ${s.fail}`, `${s.pass} из ${s.total} проверок пройдено. Смотрите красные пункты ниже.`);
+    }
+
+    // Stats
     $('#s-total').textContent=s.total;
     $('#s-pass').textContent=s.pass;
     $('#s-fail').textContent=s.fail;
-    $('#s-time').textContent=s.duration;
+    $('#s-time').textContent=(d.duration/1000).toFixed(1);
+    $('#stats').style.display='grid';
 
-    const pct=s.total?Math.round(s.pass/s.total*100):0;
-    $('#s-bar').style.width=pct+'%';
+    // Checklist
+    const cl=$('#checklist');
+    cl.innerHTML='';
 
-    const status=$('#s-status');
-    if(s.fail===0){
-        status.textContent=`Все ${s.total} тестов пройдены за ${(d.duration/1000).toFixed(1)}с`;
-        status.className='summary-status pass';
-    }else{
-        status.textContent=`${s.fail} из ${s.total} тестов провалено`;
-        status.className='summary-status fail';
-    }
-    summary.classList.add('visible');
-
-    // Suites
-    suitesEl.innerHTML='';
     (d.suites||[]).forEach((suite,i)=>{
+        const gn = groupNames[suite.name] || { icon:'&#9881;', title:suite.name, items:{} };
+        const allPass = suite.tests.every(t=>t.passed);
         const div=document.createElement('div');
-        div.className='suite';
-        div.style.animationDelay=(i*50)+'ms';
-
-        const passCount=suite.tests.filter(t=>t.passed).length;
-        const total=suite.tests.length;
+        div.className='check-group' + (allPass?'':' open');
+        div.style.animationDelay=(i*40)+'ms';
 
         div.innerHTML=`
-            <div class="suite-header">
-                <div class="suite-icon ${suite.passed?'pass':'fail'}">${suite.passed?'✔':'✖'}</div>
-                <div class="suite-name">${esc(suite.name)}</div>
-                <span class="suite-count">${passCount}/${total}</span>
-                <span class="suite-dur">${suite.duration||''}</span>
-                <span class="suite-arrow">▶</span>
+            <div class="check-group-header">
+                <span class="check-group-icon">${gn.icon}</span>
+                <span class="check-group-title">${esc(gn.title)}</span>
+                <span class="check-group-badge ${allPass?'pass':'fail'}">${allPass?'OK':'Проблема'}</span>
+                <span class="check-group-arrow">&#9654;</span>
             </div>
-            <div class="suite-body">
-                ${suite.tests.map(t=>`
-                    <div class="test-row">
-                        <span class="test-icon ${t.passed?'pass':'fail'}">${t.passed?'✔':'✖'}</span>
-                        <span class="test-name">${esc(t.name)}</span>
-                        <span class="test-dur">${t.duration}</span>
-                    </div>
-                `).join('')}
+            <div class="check-group-body">
+                ${suite.tests.map(t=>{
+                    const humanName = gn.items[t.name] || t.name;
+                    return `<div class="check-item">
+                        <span class="check-mark ${t.passed?'pass':'fail'}">${t.passed?'&#10004;':'&#10008;'}</span>
+                        <div class="check-text">
+                            <div class="what">${esc(humanName)}</div>
+                            ${!t.passed?'<div class="detail" style="color:var(--err)">Эта функция не работает — обратитесь к разработчику</div>':''}
+                        </div>
+                    </div>`;
+                }).join('')}
             </div>
         `;
 
-        div.querySelector('.suite-header').addEventListener('click',()=>{
+        div.querySelector('.check-group-header').addEventListener('click',()=>{
             div.classList.toggle('open');
         });
 
-        // Auto-open failed
-        if(!suite.passed) div.classList.add('open');
-
-        suitesEl.appendChild(div);
+        cl.appendChild(div);
     });
 
-    // Raw output
-    $('#raw-toggle').style.display='block';
+    // Raw
+    $('#raw-area').style.display='block';
     $('#raw-output').textContent=d.output||'';
     $('#btn-raw').onclick=()=>$('#raw-output').classList.toggle('visible');
+}
+
+function showVerdict(ok, title, sub){
+    const v=$('#verdict');
+    v.className='verdict visible '+(ok?'pass':'fail');
+    $('#v-icon').innerHTML=ok?'&#9989;':'&#10060;';
+    $('#v-title').textContent=title;
+    $('#v-sub').textContent=sub;
 }
 
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
