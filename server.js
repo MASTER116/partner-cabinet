@@ -211,6 +211,91 @@ app.use((req, res, next) => {
 // ===== Health check =====
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+// ===== Test runner API =====
+app.get('/api/tests/run', async (req, res) => {
+    const { execSync } = require('child_process');
+    const startTime = Date.now();
+    try {
+        const output = execSync('node --test --test-concurrency=1 tests/*.test.js 2>&1', {
+            cwd: __dirname,
+            timeout: 30000,
+            encoding: 'utf-8',
+        });
+        res.json({
+            ok: true,
+            duration: Date.now() - startTime,
+            output,
+            ...parseTestOutput(output),
+        });
+    } catch (err) {
+        const output = err.stdout || err.stderr || err.message;
+        res.json({
+            ok: false,
+            duration: Date.now() - startTime,
+            output,
+            ...parseTestOutput(output),
+        });
+    }
+});
+
+function parseTestOutput(output) {
+    const lines = output.split('\n');
+    const suites = [];
+    let currentSuite = null;
+
+    for (const line of lines) {
+        // Suite start: ▶ Name
+        const suiteMatch = line.match(/^▶\s+(.+)/);
+        if (suiteMatch) {
+            currentSuite = { name: suiteMatch[1], tests: [], passed: true, duration: '' };
+            suites.push(currentSuite);
+            continue;
+        }
+        // Test pass: ✔ Name (Xms)
+        const passMatch = line.match(/^\s+✔\s+(.+?)\s+\(([^)]+)\)/);
+        if (passMatch && currentSuite) {
+            currentSuite.tests.push({ name: passMatch[1], passed: true, duration: passMatch[2] });
+            continue;
+        }
+        // Test fail: ✖ Name (Xms)
+        const failMatch = line.match(/^\s+✖\s+(.+?)\s+\(([^)]+)\)/);
+        if (failMatch && currentSuite) {
+            currentSuite.tests.push({ name: failMatch[1], passed: false, duration: failMatch[2] });
+            currentSuite.passed = false;
+            continue;
+        }
+        // Suite end: ✔ Name (Xms) or ✖ Name (Xms)
+        const suiteEndPass = line.match(/^✔\s+(.+?)\s+\(([^)]+)\)/);
+        if (suiteEndPass) {
+            const s = suites.find(s => s.name === suiteEndPass[1]);
+            if (s) s.duration = suiteEndPass[2];
+            continue;
+        }
+        const suiteEndFail = line.match(/^✖\s+(.+?)\s+\(([^)]+)\)/);
+        if (suiteEndFail) {
+            const s = suites.find(s => s.name === suiteEndFail[1]);
+            if (s) { s.duration = suiteEndFail[2]; s.passed = false; }
+            continue;
+        }
+    }
+
+    // Summary
+    const totalMatch = output.match(/ℹ tests (\d+)/);
+    const passMatch = output.match(/ℹ pass (\d+)/);
+    const failMatch = output.match(/ℹ fail (\d+)/);
+    const durMatch = output.match(/ℹ duration_ms ([\d.]+)/);
+
+    return {
+        suites,
+        summary: {
+            total: totalMatch ? +totalMatch[1] : 0,
+            pass: passMatch ? +passMatch[1] : 0,
+            fail: failMatch ? +failMatch[1] : 0,
+            duration: durMatch ? Math.round(+durMatch[1]) : 0,
+        },
+    };
+}
+
 // ===== AUTH API =====
 
 // POST /api/auth/request-otp

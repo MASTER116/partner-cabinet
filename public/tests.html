@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тесты — Партнёрский кабинет</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+    --bg:#0D0D0D;--bgc:#181818;--bgi:#222;--bgh:#1F1F1F;
+    --t:#F5F5F5;--t2:#9CA3AF;--t3:#6B7280;
+    --ac:#FFDD2D;--act:#1A1A1A;
+    --bd:#2A2A2A;
+    --ok:#34D399;--okb:#064E3B;
+    --err:#F87171;--errb:#7F1D1D;
+    --info:#60A5FA;--infob:#1E3A5F;
+    --r:16px;--rx:8px;
+    --sh:0 1px 3px rgba(0,0,0,.4);--shh:0 4px 16px rgba(0,0,0,.5)
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);line-height:1.5;-webkit-font-smoothing:antialiased}
+
+.container{max-width:1000px;margin:0 auto;padding:20px}
+.header{display:flex;align-items:center;justify-content:space-between;padding:20px 0;border-bottom:1px solid var(--bd);margin-bottom:28px}
+.logo{font-size:20px;font-weight:800}
+.back{color:var(--t2);text-decoration:none;font-size:14px;font-weight:500;padding:8px 16px;border:2px solid var(--bd);border-radius:var(--rx)}.back:hover{border-color:var(--ac);color:var(--ac)}
+
+/* Run button */
+.run-area{text-align:center;margin:40px 0}
+.btn-run{
+    display:inline-flex;align-items:center;gap:12px;
+    padding:18px 48px;font-size:18px;font-weight:700;font-family:inherit;
+    background:var(--ac);color:var(--act);border:none;border-radius:var(--rx);
+    cursor:pointer;transition:all .2s;
+}
+.btn-run:hover{box-shadow:var(--shh);transform:translateY(-1px)}
+.btn-run:active{transform:scale(.97)}
+.btn-run:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-run .spinner{display:none;width:20px;height:20px;border:3px solid rgba(0,0,0,.2);border-top-color:var(--act);border-radius:50%;animation:spin .7s linear infinite}
+.btn-run.loading .spinner{display:block}
+.btn-run.loading .play{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Summary */
+.summary{display:none;margin:30px 0;padding:28px;background:var(--bgc);border-radius:var(--r);box-shadow:var(--sh)}
+.summary.visible{display:block;animation:fadeIn .4s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.summary-card{text-align:center;padding:16px;border-radius:var(--rx);background:var(--bgi)}
+.summary-card .num{font-size:36px;font-weight:800;line-height:1.2}
+.summary-card .label{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.num-pass{color:var(--ok)}.num-fail{color:var(--err)}.num-total{color:var(--ac)}.num-time{color:var(--info)}
+
+.summary-bar{height:8px;border-radius:4px;background:var(--errb);overflow:hidden;margin-bottom:8px}
+.summary-bar-fill{height:100%;border-radius:4px;background:var(--ok);transition:width .6s ease}
+.summary-status{text-align:center;font-size:14px;font-weight:600}
+.summary-status.pass{color:var(--ok)}.summary-status.fail{color:var(--err)}
+
+/* Suites */
+.suites{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+.suite{background:var(--bgc);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;animation:fadeIn .3s}
+.suite-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;user-select:none;transition:background .15s}
+.suite-header:hover{background:var(--bgh)}
+.suite-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.suite-icon.pass{background:var(--okb);color:var(--ok)}.suite-icon.fail{background:var(--errb);color:var(--err)}
+.suite-name{flex:1;font-weight:600;font-size:15px}
+.suite-dur{font-size:12px;color:var(--t3);font-weight:500}
+.suite-count{font-size:12px;color:var(--t2);background:var(--bgi);padding:3px 10px;border-radius:10px}
+.suite-arrow{color:var(--t3);font-size:12px;transition:transform .2s}
+.suite.open .suite-arrow{transform:rotate(90deg)}
+
+.suite-body{display:none;border-top:1px solid var(--bd)}
+.suite.open .suite-body{display:block}
+
+.test-row{display:flex;align-items:center;gap:10px;padding:10px 20px 10px 56px;border-bottom:1px solid var(--bd);font-size:13px;transition:background .1s}
+.test-row:last-child{border-bottom:none}
+.test-row:hover{background:var(--bgh)}
+.test-icon{font-size:14px;flex-shrink:0}
+.test-icon.pass{color:var(--ok)}.test-icon.fail{color:var(--err)}
+.test-name{flex:1;color:var(--t2)}
+.test-dur{font-size:11px;color:var(--t3)}
+
+/* Raw output */
+.raw-toggle{text-align:center;margin-top:20px}
+.raw-toggle button{background:none;border:2px solid var(--bd);color:var(--t2);font-size:13px;font-family:inherit;padding:8px 20px;border-radius:var(--rx);cursor:pointer}.raw-toggle button:hover{border-color:var(--ac);color:var(--ac)}
+.raw-output{display:none;margin-top:16px;padding:20px;background:var(--bgi);border-radius:var(--rx);font-size:12px;font-family:'Courier New',monospace;white-space:pre-wrap;word-break:break-all;max-height:400px;overflow-y:auto;color:var(--t2);line-height:1.7}
+.raw-output.visible{display:block}
+
+@media(max-width:640px){
+    .summary-grid{grid-template-columns:1fr 1fr}
+    .suite-header{padding:14px 16px}
+    .test-row{padding-left:40px}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <header class="header">
+        <div class="logo">&#9881; Тесты</div>
+        <a href="/" class="back">&#8592; В кабинет</a>
+    </header>
+
+    <div class="run-area">
+        <button class="btn-run" id="btn-run">
+            <span class="play">&#9654;</span>
+            <span class="spinner"></span>
+            Запустить тесты
+        </button>
+        <p style="color:var(--t3);font-size:13px;margin-top:12px">64 интеграционных и A/B теста</p>
+    </div>
+
+    <div class="summary" id="summary">
+        <div class="summary-grid">
+            <div class="summary-card"><div class="num num-total" id="s-total">—</div><div class="label">Всего</div></div>
+            <div class="summary-card"><div class="num num-pass" id="s-pass">—</div><div class="label">Пройдено</div></div>
+            <div class="summary-card"><div class="num num-fail" id="s-fail">—</div><div class="label">Провалено</div></div>
+            <div class="summary-card"><div class="num num-time" id="s-time">—</div><div class="label">Время (мс)</div></div>
+        </div>
+        <div class="summary-bar"><div class="summary-bar-fill" id="s-bar"></div></div>
+        <div class="summary-status" id="s-status"></div>
+    </div>
+
+    <div class="suites" id="suites"></div>
+
+    <div class="raw-toggle" id="raw-toggle" style="display:none">
+        <button id="btn-raw">Показать вывод консоли</button>
+    </div>
+    <pre class="raw-output" id="raw-output"></pre>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const btn=$('#btn-run');
+const summary=$('#summary');
+const suitesEl=$('#suites');
+
+btn.addEventListener('click', async()=>{
+    btn.disabled=true;
+    btn.classList.add('loading');
+    summary.classList.remove('visible');
+    suitesEl.innerHTML='';
+    $('#raw-toggle').style.display='none';
+    $('#raw-output').classList.remove('visible');
+
+    try{
+        const r=await fetch('/api/tests/run');
+        const d=await r.json();
+        renderResults(d);
+    }catch(e){
+        alert('Ошибка запуска: '+e.message);
+    }
+
+    btn.disabled=false;
+    btn.classList.remove('loading');
+});
+
+function renderResults(d){
+    const s=d.summary;
+
+    // Summary
+    $('#s-total').textContent=s.total;
+    $('#s-pass').textContent=s.pass;
+    $('#s-fail').textContent=s.fail;
+    $('#s-time').textContent=s.duration;
+
+    const pct=s.total?Math.round(s.pass/s.total*100):0;
+    $('#s-bar').style.width=pct+'%';
+
+    const status=$('#s-status');
+    if(s.fail===0){
+        status.textContent=`Все ${s.total} тестов пройдены за ${(d.duration/1000).toFixed(1)}с`;
+        status.className='summary-status pass';
+    }else{
+        status.textContent=`${s.fail} из ${s.total} тестов провалено`;
+        status.className='summary-status fail';
+    }
+    summary.classList.add('visible');
+
+    // Suites
+    suitesEl.innerHTML='';
+    (d.suites||[]).forEach((suite,i)=>{
+        const div=document.createElement('div');
+        div.className='suite';
+        div.style.animationDelay=(i*50)+'ms';
+
+        const passCount=suite.tests.filter(t=>t.passed).length;
+        const total=suite.tests.length;
+
+        div.innerHTML=`
+            <div class="suite-header">
+                <div class="suite-icon ${suite.passed?'pass':'fail'}">${suite.passed?'✔':'✖'}</div>
+                <div class="suite-name">${esc(suite.name)}</div>
+                <span class="suite-count">${passCount}/${total}</span>
+                <span class="suite-dur">${suite.duration||''}</span>
+                <span class="suite-arrow">▶</span>
+            </div>
+            <div class="suite-body">
+                ${suite.tests.map(t=>`
+                    <div class="test-row">
+                        <span class="test-icon ${t.passed?'pass':'fail'}">${t.passed?'✔':'✖'}</span>
+                        <span class="test-name">${esc(t.name)}</span>
+                        <span class="test-dur">${t.duration}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        div.querySelector('.suite-header').addEventListener('click',()=>{
+            div.classList.toggle('open');
+        });
+
+        // Auto-open failed
+        if(!suite.passed) div.classList.add('open');
+
+        suitesEl.appendChild(div);
+    });
+
+    // Raw output
+    $('#raw-toggle').style.display='block';
+    $('#raw-output').textContent=d.output||'';
+    $('#btn-raw').onclick=()=>$('#raw-output').classList.toggle('visible');
+}
+
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+})();
+</script>
+</body>
+</html>
