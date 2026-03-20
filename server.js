@@ -589,12 +589,14 @@ app.post('/api/admin/levels', (req, res) => {
     const { levels } = req.body;
     if (!Array.isArray(levels)) return res.json({ ok: false, error: 'Invalid data' });
 
+    db.pragma('foreign_keys = OFF');
     db.prepare('DELETE FROM levels').run();
     const ins = db.prepare('INSERT INTO levels (name,slug,min_clients,min_amount,reward_type,reward_value,sort_order) VALUES (?,?,?,?,?,?,?)');
     levels.forEach((l, i) => {
         const slug = l.name.toLowerCase().replace(/[^a-zа-я0-9]/gi, '_');
         ins.run(l.name, slug, l.min_clients || 0, l.min_amount || 0, l.reward_type || 'percent', l.reward_value || 0, i + 1);
     });
+    db.pragma('foreign_keys = ON');
     res.json({ ok: true });
 });
 
@@ -635,14 +637,19 @@ app.use((req, res, next) => {
     next();
 });
 
+// ===== Export for testing =====
+module.exports = { app, db };
+
 // ===== Start =====
-app.listen(PORT, () => {
-    console.log(`\n  ╔══════════════════════════════════════════════╗`);
-    console.log(`  ║  Партнёрский кабинет — демо-сервер запущен   ║`);
-    console.log(`  ╠══════════════════════════════════════════════╣`);
-    console.log(`  ║  Кабинет:  http://localhost:${PORT}             ║`);
-    console.log(`  ║  Админка:  http://localhost:${PORT}/admin        ║`);
-    console.log(`  ╠══════════════════════════════════════════════╣`);
-    console.log(`  ║  Демо-вход: любой телефон, код 123456        ║`);
-    console.log(`  ╚══════════════════════════════════════════════╝\n`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`\n  ╔══════════════════════════════════════════════╗`);
+        console.log(`  ║  Партнёрский кабинет — демо-сервер запущен   ║`);
+        console.log(`  ╠══════════════════════════════════════════════╣`);
+        console.log(`  ║  Кабинет:  http://localhost:${PORT}             ║`);
+        console.log(`  ║  Админка:  http://localhost:${PORT}/admin        ║`);
+        console.log(`  ╠══════════════════════════════════════════════╣`);
+        console.log(`  ║  Демо-вход: любой телефон, код 123456        ║`);
+        console.log(`  ╚══════════════════════════════════════════════╝\n`);
+    });
+}
