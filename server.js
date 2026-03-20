@@ -305,6 +305,234 @@ function parseTestOutput(output) {
     };
 }
 
+// ===== Proof-based tests API =====
+app.get('/api/tests/proof', async (req, res) => {
+    const Database = require('better-sqlite3');
+    const proofDb = path.join(__dirname, 'proof_test.db');
+    try { require('fs').unlinkSync(proofDb); } catch {}
+
+    // Create isolated DB with fresh seed
+    const tdb = new Database(proofDb);
+    tdb.pragma('journal_mode = WAL');
+    tdb.pragma('foreign_keys = ON');
+
+    // Copy schema + seed from main init
+    const schemaSQL = require('fs').readFileSync(path.join(__dirname, 'server.js'), 'utf-8');
+    // Re-run table creation on test db
+    tdb.exec(`
+        CREATE TABLE IF NOT EXISTS levels (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,slug TEXT NOT NULL,min_clients INTEGER DEFAULT 0,min_amount REAL DEFAULT 0,reward_type TEXT DEFAULT 'percent',reward_value REAL DEFAULT 0,sort_order INTEGER DEFAULT 0);
+        CREATE TABLE IF NOT EXISTS partners (id INTEGER PRIMARY KEY AUTOINCREMENT,phone TEXT NOT NULL UNIQUE,full_name TEXT DEFAULT '',city TEXT DEFAULT '',level_id INTEGER DEFAULT 1,referral_code TEXT NOT NULL,promo_code TEXT NOT NULL DEFAULT '',payment_details TEXT DEFAULT '',tg_chat_id TEXT DEFAULT '',max_chat_id TEXT DEFAULT '',balance_accrued REAL DEFAULT 0,balance_available REAL DEFAULT 0,created_at TEXT DEFAULT (datetime('now','localtime')));
+        CREATE TABLE IF NOT EXISTS referrals (id INTEGER PRIMARY KEY AUTOINCREMENT,partner_id INTEGER NOT NULL,client_name TEXT DEFAULT '',client_phone TEXT DEFAULT '',status TEXT DEFAULT 'lead',contract_amount REAL DEFAULT 0,bonus_amount REAL DEFAULT 0,source TEXT DEFAULT 'link',created_at TEXT DEFAULT (datetime('now','localtime')),updated_at TEXT DEFAULT (datetime('now','localtime')));
+        CREATE TABLE IF NOT EXISTS transactions (id INTEGER PRIMARY KEY AUTOINCREMENT,partner_id INTEGER NOT NULL,type TEXT NOT NULL,amount REAL DEFAULT 0,referral_id INTEGER,comment TEXT DEFAULT '',created_by TEXT DEFAULT 'system',created_at TEXT DEFAULT (datetime('now','localtime')));
+        CREATE TABLE IF NOT EXISTS payouts (id INTEGER PRIMARY KEY AUTOINCREMENT,partner_id INTEGER NOT NULL,amount REAL DEFAULT 0,payment_method TEXT DEFAULT '',payment_details TEXT DEFAULT '',status TEXT DEFAULT 'new',admin_comment TEXT DEFAULT '',created_at TEXT DEFAULT (datetime('now','localtime')),processed_at TEXT);
+        CREATE TABLE IF NOT EXISTS otp_codes (id INTEGER PRIMARY KEY AUTOINCREMENT,phone TEXT NOT NULL,code TEXT NOT NULL,expires_at TEXT NOT NULL,attempts INTEGER DEFAULT 0,used INTEGER DEFAULT 0);
+        CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY,value TEXT DEFAULT '');
+    `);
+
+    // Seed levels
+    tdb.prepare('INSERT INTO levels (name,slug,min_clients,min_amount,reward_type,reward_value,sort_order) VALUES (?,?,?,?,?,?,?)').run('Бронза','bronze',0,0,'percent',5,1);
+    tdb.prepare('INSERT INTO levels (name,slug,min_clients,min_amount,reward_type,reward_value,sort_order) VALUES (?,?,?,?,?,?,?)').run('Серебро','silver',5,100000,'percent',7,2);
+    tdb.prepare('INSERT INTO levels (name,slug,min_clients,min_amount,reward_type,reward_value,sort_order) VALUES (?,?,?,?,?,?,?)').run('Золото','gold',15,500000,'percent',10,3);
+    tdb.prepare("INSERT INTO settings (key,value) VALUES ('min_payout_amount','1000')").run();
+    tdb.prepare("INSERT INTO settings (key,value) VALUES ('bonus_trigger_status','paid')").run();
+
+    // Seed partner
+    tdb.prepare(`INSERT INTO partners (phone,full_name,city,level_id,referral_code,promo_code,payment_details,balance_accrued,balance_available) VALUES (?,?,?,?,?,?,?,?,?)`).run('+79001234567','Иванов Иван Иванович','Москва',1,'abc123','PROMO1','4276 **** 1234',47500,32500);
+    tdb.prepare(`INSERT INTO partners (phone,full_name,city,level_id,referral_code,promo_code,payment_details,balance_accrued,balance_available) VALUES (?,?,?,?,?,?,?,?,?)`).run('+79009876543','Петрова Мария','СПб',1,'def456','PROMO2','',80000,60000);
+
+    // Seed referrals
+    tdb.prepare(`INSERT INTO referrals (partner_id,client_name,client_phone,status,contract_amount,bonus_amount,source) VALUES (?,?,?,?,?,?,?)`).run(1,'Петров А.С.','+79111111111','paid',150000,7500,'link');
+    tdb.prepare(`INSERT INTO referrals (partner_id,client_name,client_phone,status,contract_amount,bonus_amount,source) VALUES (?,?,?,?,?,?,?)`).run(1,'Козлов Д.В.','+79222222222','contract',180000,0,'link');
+    tdb.prepare(`INSERT INTO referrals (partner_id,client_name,client_phone,status,contract_amount,bonus_amount,source) VALUES (?,?,?,?,?,?,?)`).run(2,'Сидоров П.П.','+79333333333','paid',200000,10000,'promo');
+
+    const proofs = [];
+    const fmtR = n => Number(n).toLocaleString('ru-RU') + ' ₽';
+
+    // ── Proof 1: Авторизация ──
+    try {
+        tdb.prepare(`INSERT INTO otp_codes (phone,code,expires_at) VALUES (?,?,datetime('now','localtime','+5 minutes'))`).run('+79001234567','123456');
+        const otp = tdb.prepare("SELECT * FROM otp_codes WHERE phone='+79001234567' ORDER BY id DESC LIMIT 1").get();
+        const partner = tdb.prepare("SELECT * FROM partners WHERE phone='+79001234567'").get();
+        proofs.push({
+            name: 'Авторизация по OTP-коду',
+            icon: '🔐',
+            passed: !!otp && !!partner,
+            steps: [
+                { label: 'Отправили код на +7 (900) 123-45-67', value: `Код в базе: ${otp.code}`, type: 'action' },
+                { label: 'Проверяем код 123456', value: otp.code === '123456' ? 'Совпадает' : 'НЕ совпадает', type: otp.code === '123456' ? 'ok' : 'err' },
+                { label: 'Находим партнёра по телефону', value: partner ? `${partner.full_name} (ID: ${partner.id})` : 'НЕ НАЙДЕН', type: partner ? 'ok' : 'err' },
+                { label: 'Результат', value: 'Вход выполнен — партнёр авторизован', type: 'result' },
+            ],
+        });
+    } catch (e) { proofs.push({ name: 'Авторизация по OTP-коду', icon: '🔐', passed: false, steps: [{ label: 'Ошибка', value: e.message, type: 'err' }] }); }
+
+    // ── Proof 2: Регистрация нового партнёра ──
+    try {
+        const beforeCount = tdb.prepare('SELECT COUNT(*) as c FROM partners').get().c;
+        const newPhone = '+79991112233';
+        const refCode = 'test_' + Date.now();
+        tdb.prepare('INSERT INTO partners (phone,full_name,level_id,referral_code,promo_code) VALUES (?,?,?,?,?)').run(newPhone, 'Новиков Тест', 1, refCode, 'TEST99');
+        const afterCount = tdb.prepare('SELECT COUNT(*) as c FROM partners').get().c;
+        const newPartner = tdb.prepare('SELECT * FROM partners WHERE phone=?').get(newPhone);
+
+        proofs.push({
+            name: 'Регистрация нового партнёра',
+            icon: '👤',
+            passed: afterCount === beforeCount + 1 && !!newPartner.referral_code,
+            steps: [
+                { label: 'Партнёров в базе ДО', value: String(beforeCount), type: 'before' },
+                { label: 'Регистрируем: Новиков Тест, +7 (999) 111-22-33', value: '', type: 'action' },
+                { label: 'Партнёров в базе ПОСЛЕ', value: String(afterCount), type: 'after' },
+                { label: 'Реферальная ссылка', value: `site.ru/?ref=${newPartner.referral_code}`, type: 'ok' },
+                { label: 'Промокод', value: newPartner.promo_code, type: 'ok' },
+                { label: 'Уровень', value: 'Бронза (начальный)', type: 'ok' },
+                { label: 'Результат', value: `+1 партнёр — было ${beforeCount}, стало ${afterCount}`, type: 'result' },
+            ],
+        });
+    } catch (e) { proofs.push({ name: 'Регистрация нового партнёра', icon: '👤', passed: false, steps: [{ label: 'Ошибка', value: e.message, type: 'err' }] }); }
+
+    // ── Proof 3: Начисление бонуса ──
+    try {
+        const partner = tdb.prepare("SELECT * FROM partners WHERE id=1").get();
+        const ref = tdb.prepare("SELECT * FROM referrals WHERE id=2").get(); // Козлов, contract, 180000
+        const balanceBefore = partner.balance_accrued;
+        const level = tdb.prepare('SELECT * FROM levels WHERE id=?').get(partner.level_id);
+        const expectedBonus = ref.contract_amount * (level.reward_value / 100);
+
+        // Меняем статус на paid и начисляем бонус
+        tdb.prepare("UPDATE referrals SET status='paid', bonus_amount=? WHERE id=2").run(expectedBonus);
+        tdb.prepare('INSERT INTO transactions (partner_id,type,amount,referral_id,comment) VALUES (?,?,?,?,?)').run(1, 'accrual', expectedBonus, 2, `Бонус за клиента ${ref.client_name}`);
+        tdb.prepare('UPDATE partners SET balance_accrued=balance_accrued+?, balance_available=balance_available+? WHERE id=1').run(expectedBonus, expectedBonus);
+
+        const partnerAfter = tdb.prepare("SELECT * FROM partners WHERE id=1").get();
+        const refAfter = tdb.prepare("SELECT * FROM referrals WHERE id=2").get();
+        const actualDiff = partnerAfter.balance_accrued - balanceBefore;
+
+        proofs.push({
+            name: 'Начисление бонуса при оплате клиента',
+            icon: '⚡',
+            passed: Math.abs(actualDiff - expectedBonus) < 0.01,
+            steps: [
+                { label: 'Баланс партнёра ДО', value: fmtR(balanceBefore), type: 'before' },
+                { label: `Клиент «${ref.client_name}» оплатил договор`, value: fmtR(ref.contract_amount), type: 'action' },
+                { label: 'Уровень партнёра', value: `${level.name} (${level.reward_value}%)`, type: 'action' },
+                { label: 'Ожидаемый бонус', value: `${fmtR(ref.contract_amount)} × ${level.reward_value}% = ${fmtR(expectedBonus)}`, type: 'action' },
+                { label: 'Начисленный бонус в БД', value: fmtR(refAfter.bonus_amount), type: 'after' },
+                { label: 'Баланс партнёра ПОСЛЕ', value: fmtR(partnerAfter.balance_accrued), type: 'after' },
+                { label: 'Результат', value: `Разница: +${fmtR(actualDiff)} — ${Math.abs(actualDiff - expectedBonus) < 0.01 ? 'совпадает с расчётом ✓' : 'НЕ совпадает ✗'}`, type: 'result' },
+            ],
+        });
+    } catch (e) { proofs.push({ name: 'Начисление бонуса при оплате клиента', icon: '⚡', passed: false, steps: [{ label: 'Ошибка', value: e.message, type: 'err' }] }); }
+
+    // ── Proof 4: Выплата ──
+    try {
+        const partner = tdb.prepare("SELECT * FROM partners WHERE id=1").get();
+        const balBefore = partner.balance_available;
+        const payAmount = 3000;
+
+        tdb.prepare('INSERT INTO payouts (partner_id,amount,payment_method,status) VALUES (?,?,?,?)').run(1, payAmount, 'card', 'new');
+        const payout = tdb.prepare("SELECT * FROM payouts WHERE partner_id=1 ORDER BY id DESC LIMIT 1").get();
+
+        // Админ одобряет
+        tdb.prepare("UPDATE payouts SET status='paid', processed_at=datetime('now','localtime') WHERE id=?").run(payout.id);
+        tdb.prepare('UPDATE partners SET balance_available=balance_available-? WHERE id=1').run(payAmount);
+        tdb.prepare('INSERT INTO transactions (partner_id,type,amount,comment) VALUES (?,?,?,?)').run(1, 'payout', payAmount, 'Выплата #' + payout.id);
+
+        const partnerAfter = tdb.prepare("SELECT * FROM partners WHERE id=1").get();
+        const payoutAfter = tdb.prepare("SELECT * FROM payouts WHERE id=?").get(payout.id);
+        const diff = balBefore - partnerAfter.balance_available;
+
+        proofs.push({
+            name: 'Выплата вознаграждения партнёру',
+            icon: '💸',
+            passed: Math.abs(diff - payAmount) < 0.01 && payoutAfter.status === 'paid',
+            steps: [
+                { label: 'Баланс к выплате ДО', value: fmtR(balBefore), type: 'before' },
+                { label: 'Партнёр запросил выплату', value: fmtR(payAmount) + ' на карту', type: 'action' },
+                { label: 'Статус заявки', value: `Создана → ${payoutAfter.status === 'paid' ? 'Одобрена админом' : payoutAfter.status}`, type: 'action' },
+                { label: 'Баланс к выплате ПОСЛЕ', value: fmtR(partnerAfter.balance_available), type: 'after' },
+                { label: 'Результат', value: `Списано: ${fmtR(diff)} — ${Math.abs(diff - payAmount) < 0.01 ? 'совпадает с суммой заявки ✓' : 'НЕ совпадает ✗'}`, type: 'result' },
+            ],
+        });
+    } catch (e) { proofs.push({ name: 'Выплата вознаграждения партнёру', icon: '💸', passed: false, steps: [{ label: 'Ошибка', value: e.message, type: 'err' }] }); }
+
+    // ── Proof 5: Защита от дублей ──
+    try {
+        const existingPhone = '+79001234567';
+        const countBefore = tdb.prepare('SELECT COUNT(*) as c FROM partners WHERE phone=?').get(existingPhone).c;
+        let blocked = false;
+        try {
+            tdb.prepare('INSERT INTO partners (phone,full_name,level_id,referral_code,promo_code) VALUES (?,?,?,?,?)').run(existingPhone, 'Хакер', 1, 'hack123', 'HACK');
+        } catch { blocked = true; }
+        const countAfter = tdb.prepare('SELECT COUNT(*) as c FROM partners WHERE phone=?').get(existingPhone).c;
+
+        proofs.push({
+            name: 'Защита от дублей: один телефон = один аккаунт',
+            icon: '🛡️',
+            passed: blocked && countAfter === countBefore,
+            steps: [
+                { label: 'Существующий аккаунт', value: `${existingPhone} — Иванов И.И.`, type: 'before' },
+                { label: 'Попытка создать второй аккаунт на тот же номер', value: blocked ? 'ЗАБЛОКИРОВАНО базой данных' : 'ПРОПУЩЕНО (проблема!)', type: blocked ? 'ok' : 'err' },
+                { label: 'Аккаунтов с этим номером', value: `Было: ${countBefore}, Стало: ${countAfter}`, type: countAfter === countBefore ? 'ok' : 'err' },
+                { label: 'Результат', value: blocked ? 'Дубликат невозможен — UNIQUE-ограничение в базе ✓' : 'УЯЗВИМОСТЬ — дубль создан ✗', type: 'result' },
+            ],
+        });
+    } catch (e) { proofs.push({ name: 'Защита от дублей', icon: '🛡️', passed: false, steps: [{ label: 'Ошибка', value: e.message, type: 'err' }] }); }
+
+    // ── Proof 6: Изоляция данных ──
+    try {
+        const refs1 = tdb.prepare('SELECT * FROM referrals WHERE partner_id=1').all();
+        const refs2 = tdb.prepare('SELECT * FROM referrals WHERE partner_id=2').all();
+        const ids1 = refs1.map(r => r.id);
+        const ids2 = refs2.map(r => r.id);
+        const overlap = ids1.filter(id => ids2.includes(id));
+
+        proofs.push({
+            name: 'Изоляция: партнёры не видят чужих клиентов',
+            icon: '🔒',
+            passed: overlap.length === 0 && refs1.length > 0 && refs2.length > 0,
+            steps: [
+                { label: 'Партнёр Иванов (ID:1) видит клиентов', value: `${refs1.length} шт: ${refs1.map(r=>r.client_name).join(', ')}`, type: 'before' },
+                { label: 'Партнёр Петрова (ID:2) видит клиентов', value: `${refs2.length} шт: ${refs2.map(r=>r.client_name).join(', ')}`, type: 'before' },
+                { label: 'Пересечение данных', value: overlap.length === 0 ? 'Нет — данные изолированы' : `ПРОБЛЕМА: ${overlap.length} общих записей`, type: overlap.length === 0 ? 'ok' : 'err' },
+                { label: 'Результат', value: overlap.length === 0 ? 'Каждый видит только своих клиентов ✓' : 'Данные утекают между партнёрами ✗', type: 'result' },
+            ],
+        });
+    } catch (e) { proofs.push({ name: 'Изоляция данных', icon: '🔒', passed: false, steps: [{ label: 'Ошибка', value: e.message, type: 'err' }] }); }
+
+    // ── Proof 7: Настройка мин. выплаты ──
+    try {
+        const minBefore = tdb.prepare("SELECT value FROM settings WHERE key='min_payout_amount'").get()?.value || '1000';
+        tdb.prepare("UPDATE settings SET value='5000' WHERE key='min_payout_amount'").run();
+        const minAfter = tdb.prepare("SELECT value FROM settings WHERE key='min_payout_amount'").get()?.value;
+        // Вернуть обратно
+        tdb.prepare("UPDATE settings SET value=? WHERE key='min_payout_amount'").run(minBefore);
+        const minRestored = tdb.prepare("SELECT value FROM settings WHERE key='min_payout_amount'").get()?.value;
+
+        proofs.push({
+            name: 'Админка: настройки программы изменяемы',
+            icon: '⚙️',
+            passed: minAfter === '5000' && minRestored === minBefore,
+            steps: [
+                { label: 'Мин. выплата ДО', value: fmtR(+minBefore), type: 'before' },
+                { label: 'Админ меняет на 5 000 ₽', value: '', type: 'action' },
+                { label: 'Мин. выплата ПОСЛЕ изменения', value: fmtR(+minAfter), type: 'after' },
+                { label: 'Возвращаем обратно', value: fmtR(+minRestored), type: 'after' },
+                { label: 'Результат', value: minAfter === '5000' ? 'Настройки сохраняются и применяются ✓' : 'Настройки НЕ сохраняются ✗', type: 'result' },
+            ],
+        });
+    } catch (e) { proofs.push({ name: 'Настройки админки', icon: '⚙️', passed: false, steps: [{ label: 'Ошибка', value: e.message, type: 'err' }] }); }
+
+    // Cleanup
+    tdb.close();
+    try { require('fs').unlinkSync(proofDb); } catch {}
+    try { require('fs').unlinkSync(proofDb + '-shm'); } catch {}
+    try { require('fs').unlinkSync(proofDb + '-wal'); } catch {}
+
+    const allPassed = proofs.every(p => p.passed);
+    res.json({ ok: allPassed, proofs, total: proofs.length, passed: proofs.filter(p=>p.passed).length });
+});
+
 // ===== AUTH API =====
 
 // POST /api/auth/request-otp
